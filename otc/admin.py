@@ -2,6 +2,8 @@ from django.contrib import admin
 from otc.models import Otc
 from otc.models import ExcelUpload
 from otc.forms import ExcelUploadForm
+from openpyxl import load_workbook
+from django.conf import settings
 
 
 @admin.register(Otc)
@@ -16,13 +18,41 @@ class OtcAdmin(admin.ModelAdmin):
 
 @admin.action(description="판매약품 재고 최신화")
 def otc_update(modeladmin, request, queryset):
+    # print(request)
+    # print(queryset)
+    # file_path = settings.BASE_DIR / "excel_files/otc.xlsx"
     
+    if queryset and isinstance(queryset.first(), ExcelUpload):
+        for upload in queryset:
+            if hasattr(upload, 'file'):
+                # file이 FileField인 경우
+                file_name = upload.file.name
+            elif hasattr(upload, 'file_name'):
+                # file_name이 CharField인 경우
+                file_name = upload.file_name
+            else:
+                print("파일 이름을 찾을 수 없습니다.")
+                continue
+
+            print(f"업로드된 파일 이름: {file_name}")
+            # 여기서 file_name을 사용하여 파일을 읽는 등의 작업을 할 수 있습니다.
+    
+    # 이후의 코드 (파일 읽기 등)는 file_name을 사용하여 수정
+    # file_path = settings.BASE_DIR / "excel_files" / file_name
+    file_path = settings.BASE_DIR / file_name
+    workbook = load_workbook(filename=file_path)
+    sheet = workbook.active
+    
+    data = []
+    for row in sheet.iter_rows(values_only=True):
+        processed_row = [str(cell).strip() if cell else '' for cell in row]
+        data.append(processed_row)
+    
+    for row in data:
+        print(row)
+
 
 @admin.register(ExcelUpload)
 class ExcelUploadAdmin(admin.ModelAdmin):
     form = ExcelUploadForm
     actions = [otc_update]
-
-# admin.site.register(Otc, OtcAdmin)
-
-# admin.site.register(ExcelUpload, ExcelUploadAdmin)
