@@ -11,7 +11,7 @@ class OtcAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'name', 'company', 'quantity', 'target', 'order',
     ]
-    fields = ['name', 'company', 'code', 'quantity', 'target', 'order', ]
+    fields = ['name', 'company', 'quantity', 'target', 'order', ]
     list_filter = ['order', ]
     search_fields = ['name', 'company', ]
 
@@ -48,8 +48,29 @@ def otc_update(modeladmin, request, queryset):
         processed_row = [str(cell).strip() if cell else '' for cell in row]
         data.append(processed_row)
     
+    
     for row in data:
-        print(row)
+        if row[1] != '제조업체':
+            all_objects = Otc.objects.all()
+            for obj in all_objects:
+                if obj.name != row[0]:
+                    pass
+                else:
+                    new_object = Otc(name=row[0], company=row[1], quantity=row[3], order=Otc.target-row[3])
+                    new_object.save()
+
+    # print(len(data))
+    # print(data[0])
+    # print(data[0][0])
+    # print(data[1][0])
+    
+    # all_objects = Otc.objects.all()
+    # for obj in all_objects:
+        # print(obj.name)
+        # print(obj.company)
+        # print(obj.quantity)
+        # print(obj.target)
+        # print(obj.order)
 
 
 @admin.register(ExcelUpload)
