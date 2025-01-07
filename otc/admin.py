@@ -1,9 +1,11 @@
+import decimal
 from django.contrib import admin
 from otc.models import Otc
 from otc.models import ExcelUpload
 from otc.forms import ExcelUploadForm
 from openpyxl import load_workbook
 from django.conf import settings
+from decimal import Decimal
 
 
 @admin.register(Otc)
@@ -51,26 +53,34 @@ def otc_update(modeladmin, request, queryset):
     
     for row in data:
         if row[1] != '제조업체':
-            all_objects = Otc.objects.all()
-            for obj in all_objects:
-                if obj.name != row[0]:
-                    pass
-                else:
-                    new_object = Otc(name=row[0], company=row[1], quantity=row[3], order=Otc.target-row[3])
-                    new_object.save()
-
-    # print(len(data))
-    # print(data[0])
-    # print(data[0][0])
-    # print(data[1][0])
-    
-    # all_objects = Otc.objects.all()
-    # for obj in all_objects:
-        # print(obj.name)
-        # print(obj.company)
-        # print(obj.quantity)
-        # print(obj.target)
-        # print(obj.order)
+            product_name = row[0]
+            product_company = row[1]
+            
+            try:
+                decimal_number = Decimal(row[3])
+            except decimal.InvalidOperation:
+                print("잘못된 숫자 형식입니다.")
+            product_quantity = decimal_number
+            # product_target = 0
+            # product_order = product_target - product_quantity
+            
+            otcs = Otc.objects.filter(name__contains=product_name)
+            
+            if otcs.exists():
+                for otc in otcs:
+                    otc.quantity = product_quantity
+                    otc.order = otc.target - product_quantity
+                    otc.save()
+                print("수정 완료되었습니다.")
+            else:
+                product_target = 0
+                product_order = product_target - product_quantity
+                new_object = Otc(name=product_name, company=product_company, quantity=product_quantity, target=product_target, order=product_order)
+                new_object.save()
+                print("새로운 품목이 추가되었습니다.")
+            
+        
+        
 
 
 @admin.register(ExcelUpload)

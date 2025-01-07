@@ -6,8 +6,6 @@ class Otc(models.Model):
     name = models.CharField(max_length=50)
     # 제조업체
     company = models.CharField(max_length=50)
-    # 약품코드
-    # code = models.CharField(max_length=25)
     # 재고량
     quantity = models.DecimalField(max_digits=5, decimal_places=2, default=False)
     # 적정재고량
