@@ -1,11 +1,32 @@
 import decimal
 from django.contrib import admin
-from otc.models import Otc
-from otc.models import ExcelUpload
+from otc.models import Otc, ExcelUpload, OrderList
 from otc.forms import ExcelUploadForm
 from openpyxl import load_workbook
 from django.conf import settings
 from decimal import Decimal
+
+
+@admin.action(description="제품 주문하기")
+def product_order(modeladmin, request, queryset):
+    data = []
+    for row in queryset:
+        processed_row = row.name + ' : ' + str(int(row.order)) + ' EA'
+        data.append(processed_row)
+        company = row.company
+    
+    combined_data = ", ".join(data)
+        
+    # print(data)
+    # print(combined_data)
+    # print(company)
+    
+    content = '안녕하세요 더샵참약국입니다\n' + combined_data + '\n주문할게요 감사합니다!'
+    # print(content)
+    
+    new_object = OrderList(company=company, content=content)
+    new_object.save()
+    print("주문서 작성이 완료되었습니다.")
 
 
 @admin.register(Otc)
@@ -13,9 +34,10 @@ class OtcAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'name', 'company', 'quantity', 'target', 'order',
     ]
-    fields = ['name', 'company', 'target',]
+    fields = ['name', 'company', 'target', 'order',]
     list_filter = ['order', ]
     search_fields = ['name', 'company', ]
+    actions = [product_order]
 
 
 @admin.action(description="판매약품 재고 최신화")
@@ -73,12 +95,21 @@ def otc_update(modeladmin, request, queryset):
                 new_object = Otc(name=product_name, company=product_company, quantity=product_quantity, target=product_target, order=product_order)
                 new_object.save()
                 print("새로운 품목이 추가되었습니다.")
+    
+    print("재고 최신화가 완료되었습니다.")
             
         
-        
-
-
 @admin.register(ExcelUpload)
 class ExcelUploadAdmin(admin.ModelAdmin):
     form = ExcelUploadForm
     actions = [otc_update]
+
+
+@admin.register(OrderList)
+class OrderListAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'datetime', 'company', 
+    ]
+    fields = ['company', 'content', ]
+    # list_filter = []
+    search_fields = ['datetime', 'company', 'content', ]

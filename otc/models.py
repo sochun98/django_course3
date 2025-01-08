@@ -16,3 +16,12 @@ class Otc(models.Model):
 
 class ExcelUpload(models.Model):
     file = models.FileField(upload_to='excel_files/')
+    
+
+class OrderList(models.Model):
+    # 주문일자
+    datetime = models.DateTimeField(auto_now_add=True)
+    # 제조업체
+    company = models.CharField(max_length=50)
+    # 주문내역
+    content = models.TextField(blank=True, null=True)
