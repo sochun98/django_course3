@@ -13,16 +13,13 @@ class OtcAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'name', 'company', 'quantity', 'target', 'order',
     ]
-    fields = ['name', 'company', 'quantity', 'target', 'order', ]
+    fields = ['name', 'company', 'target',]
     list_filter = ['order', ]
     search_fields = ['name', 'company', ]
 
 
 @admin.action(description="판매약품 재고 최신화")
 def otc_update(modeladmin, request, queryset):
-    # print(request)
-    # print(queryset)
-    # file_path = settings.BASE_DIR / "excel_files/otc.xlsx"
     
     if queryset and isinstance(queryset.first(), ExcelUpload):
         for upload in queryset:
@@ -61,8 +58,6 @@ def otc_update(modeladmin, request, queryset):
             except decimal.InvalidOperation:
                 print("잘못된 숫자 형식입니다.")
             product_quantity = decimal_number
-            # product_target = 0
-            # product_order = product_target - product_quantity
             
             otcs = Otc.objects.filter(name__contains=product_name)
             
@@ -71,7 +66,7 @@ def otc_update(modeladmin, request, queryset):
                     otc.quantity = product_quantity
                     otc.order = otc.target - product_quantity
                     otc.save()
-                print("수정 완료되었습니다.")
+                # print("수정 완료되었습니다.")
             else:
                 product_target = 0
                 product_order = product_target - product_quantity
