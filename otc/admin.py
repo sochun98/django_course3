@@ -15,7 +15,7 @@ def product_order(modeladmin, request, queryset):
         data.append(processed_row)
         company = row.company
     
-    combined_data = ", ".join(data)
+    combined_data = ", \n".join(data)
         
     # print(data)
     # print(combined_data)
@@ -84,10 +84,15 @@ def otc_update(modeladmin, request, queryset):
             otcs = Otc.objects.filter(name__contains=product_name)
             
             if otcs.exists():
+                # if len(otcs) > 1:
+                    # print(len(otcs))
+                    # print(product_name)
+                    # print('----------')
                 for otc in otcs:
-                    otc.quantity = product_quantity
-                    otc.order = otc.target - product_quantity
-                    otc.save()
+                    if len(otc.name) == len(product_name):
+                        otc.quantity = product_quantity
+                        otc.order = otc.target - product_quantity
+                        otc.save()
                 # print("수정 완료되었습니다.")
             else:
                 product_target = 0

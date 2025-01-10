@@ -11,7 +11,7 @@ class Otc(models.Model):
     # 적정재고량
     target = models.DecimalField(max_digits=5, decimal_places=2, default=False)
     # 적정재고량 - 재고량 = 주문량
-    order = models.DecimalField(max_digits=5, decimal_places=2, default=False)
+    order = models.DecimalField(max_digits=5, decimal_places=2, default=False, null=True, blank=True)
 
 
 class ExcelUpload(models.Model):
