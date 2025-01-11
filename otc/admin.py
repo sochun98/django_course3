@@ -108,6 +108,12 @@ def otc_update(modeladmin, request, queryset):
 class ExcelUploadAdmin(admin.ModelAdmin):
     form = ExcelUploadForm
     actions = [otc_update]
+    # list_display = ['id', 'file', ]
+    list_display = ('get_file_name',)
+    
+    def get_file_name(self, obj):
+        return obj.file.name
+    get_file_name.short_description = '파일 이름'
 
 
 @admin.register(OrderList)
