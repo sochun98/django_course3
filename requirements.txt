@@ -2,3 +2,5 @@ django==5.1.4
 django-excel==0.0.10
 setuptools==75.6.0
 openpyxl==3.1.5
+xlrd==2.0.1
+pandas==2.2.3

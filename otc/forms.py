@@ -1,8 +1,8 @@
 from django import forms
-from otc.models import ExcelUpload
+from otc.models import OtcUpload
 
 
-class ExcelUploadForm(forms.ModelForm):
+class OtcUploadForm(forms.ModelForm):
     class Meta:
-        model = ExcelUpload
+        model = OtcUpload
         fields = ('file',)

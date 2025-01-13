@@ -1,10 +1,14 @@
 import decimal
+import os
 from django.contrib import admin
-from otc.models import Otc, ExcelUpload, OrderList
-from otc.forms import ExcelUploadForm
-from openpyxl import load_workbook
+import xlrd
+from otc.models import Otc, OtcUpload, OrderList, ProductRegist
+from otc.forms import OtcUploadForm
+from openpyxl import load_workbook, Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 from django.conf import settings
 from decimal import Decimal
+import pandas as pd
 
 
 @admin.action(description="제품 주문하기")
@@ -32,7 +36,7 @@ def product_order(modeladmin, request, queryset):
 @admin.register(Otc)
 class OtcAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'name', 'company', 'quantity', 'target', 'order',
+        'id', 'name', 'company', 'quantity', 'target', 'order', 'expiry',
     ]
     fields = ['name', 'company', 'target', 'order',]
     list_filter = ['order', ]
@@ -43,7 +47,7 @@ class OtcAdmin(admin.ModelAdmin):
 @admin.action(description="판매약품 재고 최신화")
 def otc_update(modeladmin, request, queryset):
     
-    if queryset and isinstance(queryset.first(), ExcelUpload):
+    if queryset and isinstance(queryset.first(), OtcUpload):
         for upload in queryset:
             if hasattr(upload, 'file'):
                 # file이 FileField인 경우
@@ -103,11 +107,73 @@ def otc_update(modeladmin, request, queryset):
     
     print("재고 최신화가 완료되었습니다.")
             
+
+@admin.action(description="파일포맷변환_xls_to_xlsx")
+def file_convert(modeladmin, request, queryset):
+    if queryset and isinstance(queryset.first(), OtcUpload):
+        for upload in queryset:
+            if hasattr(upload, 'file'):
+                 # FileField에서 파일의 실제 경로를 얻습니다
+                file_path = upload.file.path
+                # file_path = upload.file.path.replace('\\', '/')
+            else:
+                print("파일 이름을 찾을 수 없습니다.")
+                continue
+
+            print(f"업로드된 파일 이름: {file_path}")
+
+    # 파일의 기본 이름과 디렉토리를 얻습니다
+    base_name = os.path.splitext(file_path)[0]
+    directory = os.path.dirname(file_path)
+    
+    # 새로운 파일 이름을 만듭니다
+    new_file_name = f"{base_name}.xlsx"
+    output_file = os.path.join(directory, new_file_name)
+    
+    # 파일 이름을 변경합니다
+    # os.rename(file_path, output_file)
+    print(f"파일이 성공적으로 '{output_file}'로 변경되었습니다.")
+    
+    # 변환 작업
+    """
+    try:
+        df = pd.read_excel(upload.file.path, engine='xlrd')  # xlrd로 읽기
+        df.to_excel(os.path.join(directory, new_file_name), engine='openpyxl', index=False)
+        modeladmin.message_user(request, f"File '{upload.file.path}' converted to '{new_file_name}' successfully.", level='info')
+    except Exception as e:
+        modeladmin.message_user(request, f"Error converting file '{upload.file.path}': {str(e)}", level='error')
+    """
+    try:
+        # .xls 파일을 읽습니다
+        wb = xlrd.open_workbook(file_path)
+        sh = wb.sheet_by_index(0)
+                
+        # 데이터를 pandas DataFrame으로 변환
+        data = []
+        for rownum in range(sh.nrows):
+            data.append(sh.row_values(rownum))
+        df = pd.DataFrame(data[1:], columns=data[0])  # 첫 번째 행을 헤더로 사용
+
+        # 새로운 .xlsx 파일을 생성합니다 (여기서는 .xlsl로 저장하지만, 실제로는 .xlsx가 맞을 수 있음)
+        wb_xlsx = Workbook()
+        ws = wb_xlsx.active
+
+        # DataFrame을 .xlsl 파일로 변환
+        for r in dataframe_to_rows(df, index=False, header=True):
+            ws.append(r)
+
+        # 파일 저장
+        wb_xlsx.save(output_file)
+        modeladmin.message_user(request, f"File '{file_path}' converted to '{output_file}' successfully.", level='info')
+    except Exception as e:
+        modeladmin.message_user(request, f"Error converting file '{file_path}': {str(e)}", level='error')
+
         
-@admin.register(ExcelUpload)
-class ExcelUploadAdmin(admin.ModelAdmin):
-    form = ExcelUploadForm
-    actions = [otc_update]
+@admin.register(OtcUpload)
+class OtcUploadAdmin(admin.ModelAdmin):
+    form = OtcUploadForm
+    actions = [otc_update, file_convert]
+    # actions = [file_convert]
     # list_display = ['id', 'file', ]
     list_display = ('get_file_name',)
     
@@ -124,3 +190,27 @@ class OrderListAdmin(admin.ModelAdmin):
     fields = ['company', 'content', ]
     # list_filter = []
     search_fields = ['datetime', 'company', 'content', ]
+
+
+@admin.action(description="의약품 입고장 작성")
+def product_regist(modeladmin, request, queryset):
+    for obj in queryset:
+        if obj.file:
+            try:
+                workbook = xlrd.open_workbook(file_contents=obj.file.read())
+                sheet = workbook.sheet_by_index(0)
+
+                for row in range(sheet.nrows):
+                    print(sheet.row_values(row)[8])
+
+                modeladmin.message_user(request, f"Excel file '{obj.file.name}' has been read successfully.")
+            except Exception as e:
+                modeladmin.message_user(request, f"Error reading file '{obj.file.name}': {str(e)}", level='error')
+        else:
+            modeladmin.message_user(request, f"No file uploaded for '{obj}'.", level='warning')
+
+@admin.register(ProductRegist)
+class ProductRegistAdmin(admin.ModelAdmin):
+    list_display = ('file', 'uploaded_at')
+    actions = [product_regist]
+    
