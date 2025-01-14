@@ -1,6 +1,7 @@
 import decimal
 import os
 from django.contrib import admin
+from django.db import models
 import xlrd
 from otc.models import Otc, OtcUpload, OrderList, ProductRegist
 from otc.forms import OtcUploadForm
@@ -38,13 +39,57 @@ class OtcAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'name', 'company', 'quantity', 'target', 'order', 'expiry',
     ]
-    fields = ['name', 'company', 'target', 'order',]
+    fields = ['name', 'company', 'target', 'order', 'expiry',]
     list_filter = ['order', ]
     search_fields = ['name', 'company', ]
     actions = [product_order]
 
 
 @admin.action(description="판매약품 재고 최신화")
+# xls 확장자
+def otc_update(modeladmin, request, queryset):
+    for obj in queryset:
+        if obj.file:
+            try:
+                workbook = xlrd.open_workbook(file_contents=obj.file.read())
+                sheet = workbook.sheet_by_index(0)
+                
+                for row in range(sheet.nrows):
+                    if sheet.row_values(row)[1] != '제조업체':
+                        product_name = sheet.row_values(row)[0]
+                        product_company = sheet.row_values(row)[1]
+                        
+                        try:
+                            decimal_number = Decimal(sheet.row_values(row)[3])
+                        except decimal.InvalidOperation:
+                            print("잘못된 숫자 형식입니다.")
+                        product_quantity = decimal_number
+                        
+                        otcs = Otc.objects.filter(name__contains=product_name)
+                        
+                        if otcs.exists():
+                            for otc in otcs:
+                                if len(otc.name) == len(product_name):
+                                    otc.quantity = product_quantity
+                                    otc.order = otc.target - product_quantity
+                                    otc.save()
+                        else:
+                            product_target = 0
+                            product_order = product_target - product_quantity
+                            new_object = Otc(name=product_name, company=product_company, quantity=product_quantity, target=product_target, order=product_order)
+                            new_object.save()
+                            print("새로운 품목이 추가되었습니다.")
+    
+                print("재고 최신화가 완료되었습니다.")
+
+                modeladmin.message_user(request, "판매약품 재고 최신화 되었습니다.")
+            except Exception as e:
+                modeladmin.message_user(request, f"Error reading file '{obj.file.name}': {str(e)}", level='error')
+        else:
+            modeladmin.message_user(request, f"No file uploaded for '{obj}'.", level='warning')
+    
+# xlsx 확장자
+"""
 def otc_update(modeladmin, request, queryset):
     
     if queryset and isinstance(queryset.first(), OtcUpload):
@@ -106,7 +151,9 @@ def otc_update(modeladmin, request, queryset):
                 print("새로운 품목이 추가되었습니다.")
     
     print("재고 최신화가 완료되었습니다.")
+"""
             
+"""
 
 @admin.action(description="파일포맷변환_xls_to_xlsx")
 def file_convert(modeladmin, request, queryset):
@@ -135,14 +182,7 @@ def file_convert(modeladmin, request, queryset):
     print(f"파일이 성공적으로 '{output_file}'로 변경되었습니다.")
     
     # 변환 작업
-    """
-    try:
-        df = pd.read_excel(upload.file.path, engine='xlrd')  # xlrd로 읽기
-        df.to_excel(os.path.join(directory, new_file_name), engine='openpyxl', index=False)
-        modeladmin.message_user(request, f"File '{upload.file.path}' converted to '{new_file_name}' successfully.", level='info')
-    except Exception as e:
-        modeladmin.message_user(request, f"Error converting file '{upload.file.path}': {str(e)}", level='error')
-    """
+
     try:
         # .xls 파일을 읽습니다
         wb = xlrd.open_workbook(file_path)
@@ -167,19 +207,23 @@ def file_convert(modeladmin, request, queryset):
         modeladmin.message_user(request, f"File '{file_path}' converted to '{output_file}' successfully.", level='info')
     except Exception as e:
         modeladmin.message_user(request, f"Error converting file '{file_path}': {str(e)}", level='error')
-
+"""
         
 @admin.register(OtcUpload)
 class OtcUploadAdmin(admin.ModelAdmin):
     form = OtcUploadForm
-    actions = [otc_update, file_convert]
-    # actions = [file_convert]
-    # list_display = ['id', 'file', ]
+    actions = [otc_update]
     list_display = ('get_file_name',)
     
     def get_file_name(self, obj):
         return obj.file.name
     get_file_name.short_description = '파일 이름'
+    
+    def delete_model(self, request, obj):
+        # 파일 삭제
+        obj.file.delete(save=False)
+        # 모델 인스턴스 삭제
+        obj.delete()
 
 
 @admin.register(OrderList)
@@ -192,7 +236,7 @@ class OrderListAdmin(admin.ModelAdmin):
     search_fields = ['datetime', 'company', 'content', ]
 
 
-@admin.action(description="의약품 입고장 작성")
+@admin.action(description="의약품 유효기간 입력")
 def product_regist(modeladmin, request, queryset):
     for obj in queryset:
         if obj.file:
@@ -201,7 +245,21 @@ def product_regist(modeladmin, request, queryset):
                 sheet = workbook.sheet_by_index(0)
 
                 for row in range(sheet.nrows):
-                    print(sheet.row_values(row)[8])
+                    if sheet.row_values(row)[0] != '약품명':
+                        product_name = sheet.row_values(row)[0]
+                        product_expiry = sheet.row_values(row)[8]
+                        print(f"제품명 : {product_name}, 유효기간 : {product_expiry}")
+                        
+                        otcs = Otc.objects.filter(name__contains=product_name)
+                        
+                        if otcs.exists():
+                            for otc in otcs:
+                                if len(otc.name) == len(product_name):
+                                    otc.expiry = product_expiry
+                                    otc.save()
+                        else:
+                            modeladmin.message_user(request, f"{product_name}은 아직 등록되지 않은 제품입니다. otc update를 통해서 등록한 후에 유효기간을 입력하시기 바랍니다.")
+                            
 
                 modeladmin.message_user(request, f"Excel file '{obj.file.name}' has been read successfully.")
             except Exception as e:
@@ -209,8 +267,16 @@ def product_regist(modeladmin, request, queryset):
         else:
             modeladmin.message_user(request, f"No file uploaded for '{obj}'.", level='warning')
 
+
 @admin.register(ProductRegist)
 class ProductRegistAdmin(admin.ModelAdmin):
     list_display = ('file', 'uploaded_at')
     actions = [product_regist]
     
+    def delete_model(self, request, obj):
+        # 파일 삭제
+        obj.file.delete(save=False)
+        # 모델 인스턴스 삭제
+        obj.delete()
+
+
