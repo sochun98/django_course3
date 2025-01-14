@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.db import models
 import xlrd
 from otc.models import Otc, OtcUpload, OrderList, ProductRegist
-from otc.forms import OtcUploadForm
+from otc.forms import OtcUploadForm, ProductRegistForm
 from openpyxl import load_workbook, Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from django.conf import settings
@@ -235,7 +235,7 @@ class OrderListAdmin(admin.ModelAdmin):
     # list_filter = []
     search_fields = ['datetime', 'company', 'content', ]
 
-
+"""
 @admin.action(description="의약품 유효기간 입력")
 def product_regist(modeladmin, request, queryset):
     for obj in queryset:
@@ -254,7 +254,7 @@ def product_regist(modeladmin, request, queryset):
                         
                         if otcs.exists():
                             for otc in otcs:
-                                if len(otc.name) == len(product_name):
+                                if len(otc.name) == len(product_name) and otc.quantity > 0:
                                     otc.expiry = product_expiry
                                     otc.save()
                         else:
@@ -266,12 +266,32 @@ def product_regist(modeladmin, request, queryset):
                 modeladmin.message_user(request, f"Error reading file '{obj.file.name}': {str(e)}", level='error')
         else:
             modeladmin.message_user(request, f"No file uploaded for '{obj}'.", level='warning')
+"""
 
 
 @admin.register(ProductRegist)
 class ProductRegistAdmin(admin.ModelAdmin):
     list_display = ('file', 'uploaded_at')
-    actions = [product_regist]
+    form = ProductRegistForm
+    actions = ['product_regist']
+    
+    def product_regist(self, request, queryset):
+        for obj in queryset:
+            if obj.file:
+                try:
+                    #  여러 파일을 처리할 때는 getlist()를 사용합니다
+                    files = request.FILES.getlist('file')
+                    for file in files:
+                        # 여기서 각 파일을 처리합니다. 예를 들어, 새로운 ProductRegist 객체를 만드는 등의 작업
+                        # ProductRegist.objects.create(file=file)
+                        print(file)
+                    self.message_user(request, f"Files uploaded successfullly.")
+                except Exception as e:
+                    self.message_user(request, f"Error reading file: {str(e)}", level='error')
+            else:
+                self.message_user(request, f"No file uploaded for '{obj}'.", level='warning')
+    
+    product_regist.short_description = "의약품 유효기간 입력"
     
     def delete_model(self, request, obj):
         # 파일 삭제
