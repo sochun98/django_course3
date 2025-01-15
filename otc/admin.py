@@ -1,6 +1,8 @@
 import decimal
-import os
+# import os
 from django.contrib import admin
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
 from django.db import models
 import xlrd
 from otc.models import Otc, OtcUpload, OrderList, ProductRegist
@@ -9,7 +11,7 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from django.conf import settings
 from decimal import Decimal
-import pandas as pd
+# import pandas as pd
 
 
 @admin.action(description="제품 주문하기")
@@ -37,7 +39,7 @@ def product_order(modeladmin, request, queryset):
 @admin.register(Otc)
 class OtcAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'name', 'company', 'quantity', 'target', 'order', 'expiry',
+        'id', 'name', 'company', 'quantity', 'target', 'order', 'expiry', 'last',
     ]
     fields = ['name', 'company', 'target', 'order', 'expiry',]
     list_filter = ['order', ]
@@ -271,32 +273,53 @@ def product_regist(modeladmin, request, queryset):
 
 @admin.register(ProductRegist)
 class ProductRegistAdmin(admin.ModelAdmin):
-    list_display = ('file', 'uploaded_at')
     form = ProductRegistForm
-    actions = ['product_regist']
+    list_display = ('file', 'uploaded_at')
     
-    def product_regist(self, request, queryset):
+    def save_model(self, request, obj, form, change):
+        files = request.FILES.getlist('file')
+        if files:  # 파일이 선택된 경우에만 처리
+            for f in files:
+                # 각 파일에 대해 새로운 ProductRegist 인스턴스 생성
+                instance = ProductRegist(file=f)
+                instance.save()
+        else:  # 파일이 없는 경우 기본 저장 동작 수행
+            super().save_model(request, obj, form, change)
+            
+    def process_files(self, request, queryset):
         for obj in queryset:
             if obj.file:
                 try:
-                    #  여러 파일을 처리할 때는 getlist()를 사용합니다
-                    files = request.FILES.getlist('file')
-                    for file in files:
-                        # 여기서 각 파일을 처리합니다. 예를 들어, 새로운 ProductRegist 객체를 만드는 등의 작업
-                        # ProductRegist.objects.create(file=file)
-                        print(file)
-                    self.message_user(request, f"Files uploaded successfullly.")
+                    workbook = xlrd.open_workbook(file_contents=obj.file.read())
+                    sheet = workbook.sheet_by_index(0)
+
+                    for row in range(sheet.nrows):
+                        if sheet.row_values(row)[0] != '약품명':
+                            product_name = sheet.row_values(row)[0]
+                            product_expiry = sheet.row_values(row)[8]
+                            product_order = sheet.row_values(row)[3]
+                            
+                            otcs = Otc.objects.filter(name__contains=product_name)
+                            if otcs.exists():
+                                for otc in otcs:
+                                    if len(otc.name) == len(product_name) and otc.quantity > 0:
+                                        otc.expiry = product_expiry
+                                        otc.last = product_order
+                                        otc.save()
+                            else:
+                                self.message_user(
+                                    request,
+                                    f"{product_name}은 아직 등록되지 않은 제품입니다.",
+                                    level='WARNING'
+                                )
+                    
+                    self.message_user(request, "파일 처리가 완료되었습니다.")
                 except Exception as e:
-                    self.message_user(request, f"Error reading file: {str(e)}", level='error')
-            else:
-                self.message_user(request, f"No file uploaded for '{obj}'.", level='warning')
+                    self.message_user(request, f"오류 발생: {str(e)}", level='ERROR')
     
-    product_regist.short_description = "의약품 유효기간 입력"
+    process_files.short_description = "유효기간 입력하기"
+    actions = ['process_files']
     
-    def delete_model(self, request, obj):
-        # 파일 삭제
+    """def delete_model(self, request, obj):
         obj.file.delete(save=False)
-        # 모델 인스턴스 삭제
-        obj.delete()
-
-
+        obj.delete()"""

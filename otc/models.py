@@ -15,6 +15,8 @@ class Otc(models.Model):
     order = models.DecimalField(max_digits=5, decimal_places=2, default=False, null=True, blank=True)
     # 유효기간
     expiry = models.CharField(max_length=8, null=True, blank=True)
+    # 마지막 주문량
+    last = models.DecimalField(max_digits=5, decimal_places=2, default=False, null=True, blank=True)
 
 
 class OtcUpload(models.Model):
@@ -35,15 +37,25 @@ class OrderList(models.Model):
     
 
 class ProductRegist(models.Model):
-    file = models.FileField(upload_to='productregist_files/', blank=True, null=True)
+    file = models.FileField(upload_to='productregist_files/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return self.file.name
+        try:
+            return str(self.file.name)
+        except AttributeError:
+            return "Multiple files"
     
     def clean(self):
-        file_extension = self.file.name.split('.')[-1].lower()
-        if file_extension != 'xls':
-            raise ValidationError('올바른 파일 형식이 아닙니다. xls 파일만 업로드 가능합니다.')
+        if hasattr(self.file, 'name'):  # 단일 파일인 경우
+            file_extension = self.file.name.split('.')[-1].lower()
+            if file_extension != 'xls':
+                raise ValidationError('올바른 파일 형식이 아닙니다. xls 파일만 업로드 가능합니다.')
+        """elif isinstance(self.file, list):  # 다중 파일인 경우
+            for f in self.file:
+                if hasattr(f, 'name'):
+                    file_extension = f.name.split('.')[-1].lower()
+                    if file_extension != 'xls':
+                        raise ValidationError(f'{f.name}는 올바른 파일 형식이 아닙니다. xls 파일만 업로드 가능합니다.')"""
 
 
