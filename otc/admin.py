@@ -302,9 +302,18 @@ class ProductRegistAdmin(admin.ModelAdmin):
                             otcs = Otc.objects.filter(name__contains=product_name)
                             if otcs.exists():
                                 for otc in otcs:
-                                    if len(otc.name) == len(product_name) and otc.quantity > 0:
-                                        otc.expiry = product_expiry
+                                    if otc.name == product_name and otc.quantity > 0:
+                                        if product_expiry:
+                                            otc.expiry = int(product_expiry)
+                                        # 유효기간이 큰 값으로 저장
+                                        """
                                         otc.last = product_order
+                                        if otc.expiry.exists():
+                                            if otc.expiry < product_expiry:
+                                                otc.expiry = product_expiry
+                                        else:
+                                            otc.expiry = product_expiry
+                                        """
                                         otc.save()
                             else:
                                 self.message_user(

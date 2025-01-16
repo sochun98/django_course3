@@ -14,7 +14,7 @@ class Otc(models.Model):
     # 적정재고량 - 재고량 = 주문량
     order = models.DecimalField(max_digits=5, decimal_places=2, default=False, null=True, blank=True)
     # 유효기간
-    expiry = models.CharField(max_length=8, null=True, blank=True)
+    expiry = models.IntegerField(null=True, blank=True)
     # 마지막 주문량
     last = models.DecimalField(max_digits=5, decimal_places=2, default=False, null=True, blank=True)
 
