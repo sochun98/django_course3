@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-
+from ingredient.models import Ingredient
 
 class Otc(models.Model):
     # 제품명
@@ -17,13 +17,22 @@ class Otc(models.Model):
     expiry = models.IntegerField(null=True, blank=True)
     # 마지막 주문량
     last = models.DecimalField(max_digits=5, decimal_places=2, default=False, null=True, blank=True)
+    # 성분
+    ingredients = models.ManyToManyField(Ingredient, related_name='otc_products')
+    # 효능
+    effects = models.TextField(null=True, blank=True)
+    # 용법
+    dosage = models.TextField(null=True, blank=True)
+    # 주의사항
+    precautions = models.TextField(null=True, blank=True)
 
 
 class OtcUpload(models.Model):
     file = models.FileField(upload_to='otc_files/')
     
     def delete(self, *args, **kwargs):
-        self.file.delete()
+        if self.file:
+            self.file.delete(save=False)
         super().delete(*args, **kwargs)
     
 
@@ -45,6 +54,11 @@ class ProductRegist(models.Model):
             return str(self.file.name)
         except AttributeError:
             return "Multiple files"
+        
+    def delete(self, *args, **kwargs):
+        if self.file:
+            self.file.delete(save=False)
+        super().delete(*args, **kwargs)
     
     def clean(self):
         if hasattr(self.file, 'name'):  # 단일 파일인 경우

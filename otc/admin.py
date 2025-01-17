@@ -39,12 +39,17 @@ def product_order(modeladmin, request, queryset):
 @admin.register(Otc)
 class OtcAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'name', 'company', 'quantity', 'target', 'order', 'expiry', 'last',
+        'id', 'name', 'company', 'quantity', 'target', 'order', 'expiry', 'last', 'get_ingredients',
     ]
-    fields = ['name', 'company', 'target', 'order', 'expiry',]
+    fields = ['name', 'company', 'target', 'order', 'expiry', 'ingredients', 'effects', 'dosage', 'precautions', ]
+    filter_horizontal = ['ingredients'] # 다대다 관계를 위한 편리한 인터페이스
     list_filter = ['order', ]
-    search_fields = ['name', 'company', ]
+    search_fields = ['name', 'company', 'ingredients__name', 'effects',]
     actions = [product_order]
+    
+    def get_ingredients(self, obj):
+        return ", ".join([i.name for i in obj.ingredients.all()])
+    get_ingredients.short_description = '성분'
 
 
 @admin.action(description="판매약품 재고 최신화")
@@ -223,9 +228,16 @@ class OtcUploadAdmin(admin.ModelAdmin):
     
     def delete_model(self, request, obj):
         # 파일 삭제
-        obj.file.delete(save=False)
+        if obj.file:
+            obj.file.delete(save=False)
         # 모델 인스턴스 삭제
         obj.delete()
+    
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            if obj.file:
+                obj.file.delete(save=False)
+        queryset.delete()
 
 
 @admin.register(OrderList)
@@ -329,6 +341,13 @@ class ProductRegistAdmin(admin.ModelAdmin):
     process_files.short_description = "유효기간 입력하기"
     actions = ['process_files']
     
-    """def delete_model(self, request, obj):
-        obj.file.delete(save=False)
-        obj.delete()"""
+    def delete_model(self, request, obj):
+        if obj.file:
+            obj.file.delete(save=False)
+        obj.delete()
+    
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            if obj.file:
+                obj.file.delete(save=False)
+        queryset.delete()
