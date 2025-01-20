@@ -86,11 +86,37 @@ class SetAdmin(admin.ModelAdmin):
     actions = [price_sell_calc]
 
 
+@admin.action(description="조제판매수익 계산하기")
+def profit_calc(modeladmin, request, queryset):
+    for row in queryset:
+        bill = 10000*row.bill_10k + 5000*row.bill_5k + 1000*row.bill_1k
+        presc_sum = row.presc_insur + row.presc_nonsur
+        margin_sum = row.presc_sum + row.otc_margin
+        presc_calc = bill + row.presc_card + row.otc_card + row.otc_discount + row.amount_billing - (row.otc_in + row.medicine_insur + row.medicine_nonsur)
+        otc_calc = row.otc_card + row.otc_bill + row.otc_discount
+        bill_calc = row.presc_in + row.otc_in - (row.presc_card + row.otc_card + row.otc_discount)
+        card_calc = row.presc_card + row.otc_card
+        
+        profits = Profit.objects.filter(date__contains=row.date)
+        if profits.exists():
+            for profit in profits:
+                profit.presc_sum = presc_sum
+                profit.margin_sum = margin_sum
+                profit.presc_calc = presc_calc
+                profit.otc_calc = otc_calc
+                profit.bill_calc = bill_calc
+                profit.card_calc = card_calc
+                profit.bill = bill
+                profit.save()
+        modeladmin.message_user(request, "조제판매수익 계산이 완료되었습니다.")
+    
+
 @admin.register(Profit)
 class ProfitAdmin(admin.ModelAdmin):
     list_display = [
         'date', 'margin_sum', 'presc_sum', 'otc_in', 'presc_num', 'otc_num',
     ]
     fields = [
-        'date', 'bill_10k', 'bill_5k', 'bill_1k', 'otc_in', 'otc_discount', 'otc_margin', 'presc_num', 'otc_num', 'presc_in', 'presc_bill', 'presc_card', 'otc_bill', 'otc_card', 'medicine_insur', 'medicine_nonsur', 'presc_insur', 'presc_nonsur', 'card_in', 
+        'date', 'bill_10k', 'bill_5k', 'bill_1k', 'otc_discount', 'otc_margin', 'presc_num', 'otc_num', 'presc_in', 'presc_bill', 'presc_card', 'otc_in', 'otc_bill', 'otc_card', 'medicine_insur', 'medicine_nonsur', 'presc_insur', 'presc_nonsur', 'amount_billing', 'card_in', 'bill', 'presc_calc', 'otc_calc', 'bill_calc', 'card_calc',
     ]
+    actions = [profit_calc]

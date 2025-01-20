@@ -70,6 +70,8 @@ class Profit(models.Model):
     bill_10k = models.IntegerField(default=0)
     bill_5k = models.IntegerField(default=0)
     bill_1k = models.IntegerField(default=0)
+    # bill = 10000*bill_10k + 5000*bill_5k + 1000*bill_1k
+    bill = models.IntegerField(default=0)
     # 약품판매약
     otc_in = models.IntegerField()
     # 판매할인액
@@ -89,6 +91,8 @@ class Profit(models.Model):
     # 처방조제약품 가격
     medicine_insur = models.IntegerField()
     medicine_nonsur = models.IntegerField()
+    # 청구액
+    amount_billing = models.IntegerField()
     # 조제료 (presc_sum = presc_insur + presc_nonsur)
     presc_insur = models.IntegerField()
     presc_nonsur = models.IntegerField()
