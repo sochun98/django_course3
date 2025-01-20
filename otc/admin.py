@@ -14,7 +14,7 @@ from decimal import Decimal
 # import pandas as pd
 
 
-@admin.action(description="제품 주문하기")
+@admin.action(description="제품 주문서 작성하기")
 def product_order(modeladmin, request, queryset):
     data = []
     for row in queryset:
@@ -24,12 +24,7 @@ def product_order(modeladmin, request, queryset):
     
     combined_data = ", \n".join(data)
         
-    # print(data)
-    # print(combined_data)
-    # print(company)
-    
-    content = '안녕하세요 더샵참약국입니다\n' + combined_data + '\n주문할게요 감사합니다!'
-    # print(content)
+    content = '안녕하세요 더샵참약국입니다.\n' + combined_data + '\n주문할게요 감사합니다!'
     
     new_object = OrderList(company=company, content=content)
     new_object.save()

@@ -18,7 +18,7 @@ class Otc(models.Model):
     # 마지막 주문량
     last = models.DecimalField(max_digits=5, decimal_places=2, default=False, null=True, blank=True)
     # 성분
-    ingredients = models.ManyToManyField(Ingredient, related_name='otc_products', null=True, blank=True)
+    ingredients = models.ManyToManyField(Ingredient, related_name='otc_products',  blank=True)
     # 효능
     effects = models.TextField(null=True, blank=True)
     # 용법
