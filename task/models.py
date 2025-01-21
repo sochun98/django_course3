@@ -73,32 +73,32 @@ class Profit(models.Model):
     # bill = 10000*bill_10k + 5000*bill_5k + 1000*bill_1k
     bill = models.IntegerField(default=0)
     # 약품판매약
-    otc_in = models.IntegerField()
+    otc_in = models.IntegerField(blank=True, null=True)
     # 판매할인액
-    otc_discount = models.IntegerField()
+    otc_discount = models.IntegerField(blank=True, null=True)
     # 판매마진액
-    otc_margin = models.IntegerField()
+    otc_margin = models.IntegerField(blank=True, null=True)
     # 처방, 판매 건수
-    presc_num = models.IntegerField()
-    otc_num = models.IntegerField()
+    presc_num = models.IntegerField(blank=True, null=True)
+    otc_num = models.IntegerField(blank=True, null=True)
     # 조제 입금
-    presc_in = models.IntegerField()
-    presc_bill = models.IntegerField()
-    presc_card = models.IntegerField()
+    presc_in = models.IntegerField(blank=True, null=True)
+    presc_bill = models.IntegerField(blank=True, null=True)
+    presc_card = models.IntegerField(blank=True, null=True)
     # 약품판매(현금, 카드)
-    otc_bill = models.IntegerField()
-    otc_card = models.IntegerField()
+    otc_bill = models.IntegerField(blank=True, null=True)
+    otc_card = models.IntegerField(blank=True, null=True)
     # 처방조제약품 가격
-    medicine_insur = models.IntegerField()
-    medicine_nonsur = models.IntegerField()
+    medicine_insur = models.IntegerField(blank=True, null=True)
+    medicine_nonsur = models.IntegerField(blank=True, null=True)
     # 청구액
-    amount_billing = models.IntegerField()
+    amount_billing = models.IntegerField(blank=True, null=True)
     # 조제료 (presc_sum = presc_insur + presc_nonsur)
-    presc_insur = models.IntegerField()
-    presc_nonsur = models.IntegerField()
+    presc_insur = models.IntegerField(blank=True, null=True)
+    presc_nonsur = models.IntegerField(blank=True, null=True)
     presc_sum = models.IntegerField(default=0)
     # 카드입금
-    card_in = models.IntegerField()
+    card_in = models.IntegerField(blank=True, null=True)
     # 조제판매마진 (presc_sum + otc_margin)
     margin_sum = models.IntegerField(default=0)
     # 계산을 통해서 검증 가능
@@ -110,4 +110,12 @@ class Profit(models.Model):
     bill_calc = models.IntegerField(default=0)
     # card_calc = presc_card + otc_card
     card_calc = models.IntegerField(default=0)
+    # presc_gap = presc(insur + nonsur) - presc_cal
+    presc_gap = models.IntegerField(default=0)
+    # otc_gap = otc_in - otc_calc
+    otc_gap = models.IntegerField(default=0)
+    # card_gap = card_in - card_calc
+    card_gap = models.IntegerField(default=0)
+    # bill_gap = bill - bill_calc
+    bill_gap = models.IntegerField(default=0)
     
