@@ -34,7 +34,7 @@ def product_order(modeladmin, request, queryset):
 @admin.register(Otc)
 class OtcAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'name', 'company', 'quantity', 'target', 'order', 'expiry', 'last', 'get_ingredients',
+        'name', 'company', 'quantity', 'target', 'order', 'expiry', 'last', 'get_ingredients',
     ]
     fields = ['name', 'company', 'target', 'order', 'expiry', 'ingredients', 'effects', 'dosage', 'precautions', ]
     filter_horizontal = ['ingredients'] # 다대다 관계를 위한 편리한 인터페이스

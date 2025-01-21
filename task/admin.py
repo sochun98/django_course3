@@ -1,5 +1,5 @@
 from django.contrib import admin
-from task.models import Profit, Return, ReturnList, Set
+from task.models import OutOfStock, Profit, Return, ReturnList, Set, Todo
 
 
 @admin.action(description="제품 전체개수, 전체가격, 누적가격 계산하기")
@@ -148,3 +148,27 @@ class ProfitAdmin(admin.ModelAdmin):
         'date', 'bill_10k', 'bill_5k', 'bill_1k', 'otc_discount', 'otc_margin', 'amount_billing', 'presc_num', 'otc_num', 'presc_in', 'presc_bill', 'presc_card', 'otc_in', 'otc_bill', 'otc_card', 'medicine_insur', 'medicine_nonsur', 'presc_insur', 'presc_nonsur', 'card_in', 'bill', 'presc_sum', 'presc_calc', 'otc_calc', 'bill_calc', 'card_calc', 'presc_gap', 'otc_gap', 'card_gap', 'bill_gap',
     ]
     actions = [profit_calc, average_calc]
+
+
+@admin.register(Todo)
+class TodoAdmin(admin.ModelAdmin):
+    list_display = [
+        'datetime', 'must', 'checkbox',
+    ]
+    fields = [
+        'must', 'checkbox',
+    ]
+    search_fields = ['must']
+    list_filter = ['checkbox']
+
+
+@admin.register(OutOfStock)
+class OutOfStockAdmin(admin.ModelAdmin):
+    list_display = [
+        'datetime', 'name', 'stock',
+    ]
+    fields = [
+        'name', 'stock',
+    ]
+    search_fields = ['name']
+    list_filter = ['stock']

@@ -118,4 +118,21 @@ class Profit(models.Model):
     card_gap = models.IntegerField(default=0)
     # bill_gap = bill - bill_calc
     bill_gap = models.IntegerField(default=0)
-    
+
+
+class Todo(models.Model):
+    # 날짜
+    datetime = models.DateTimeField(auto_now_add=True)
+    # 해야 할 일
+    must = models.CharField(max_length=100)
+    # 체크박스
+    checkbox = models.BooleanField(default=False)
+
+
+class OutOfStock(models.Model):
+    # 날짜
+    datetime = models.DateTimeField(auto_now_add=True)
+    # 제품명
+    name = models.CharField(max_length=50)
+    # 품절해제
+    stock = models.BooleanField(default=False)
