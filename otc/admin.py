@@ -277,7 +277,7 @@ def product_regist(modeladmin, request, queryset):
             modeladmin.message_user(request, f"No file uploaded for '{obj}'.", level='warning')
 """
 
-
+"""
 @admin.register(ProductRegist)
 class ProductRegistAdmin(admin.ModelAdmin):
     form = ProductRegistForm
@@ -312,15 +312,6 @@ class ProductRegistAdmin(admin.ModelAdmin):
                                     if otc.name == product_name and otc.quantity > 0:
                                         if product_expiry:
                                             otc.expiry = int(product_expiry)
-                                        # 유효기간이 큰 값으로 저장
-                                        """
-                                        otc.last = product_order
-                                        if otc.expiry.exists():
-                                            if otc.expiry < product_expiry:
-                                                otc.expiry = product_expiry
-                                        else:
-                                            otc.expiry = product_expiry
-                                        """
                                         otc.save()
                             else:
                                 self.message_user(
@@ -335,6 +326,68 @@ class ProductRegistAdmin(admin.ModelAdmin):
     
     process_files.short_description = "유효기간 입력하기"
     actions = ['process_files']
+    
+    def delete_model(self, request, obj):
+        if obj.file:
+            obj.file.delete(save=False)
+        obj.delete()
+    
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            if obj.file:
+                obj.file.delete(save=False)
+        queryset.delete()
+
+"""
+
+@admin.action(description="유효기간 입력하기")
+def process_files(modeladmin, request, queryset):
+    for obj in queryset:
+        if obj.file:
+            try:
+                workbook = xlrd.open_workbook(file_contents=obj.file.read())
+                sheet = workbook.sheet_by_index(0)
+
+                for row in range(sheet.nrows):
+                    if sheet.row_values(row)[0] != '약품명':
+                        product_name = sheet.row_values(row)[0]
+                        product_expiry = sheet.row_values(row)[8]
+                        product_order = sheet.row_values(row)[3]
+                        
+                        otcs = Otc.objects.filter(name__contains=product_name)
+                        if otcs.exists():
+                            for otc in otcs:
+                                if otc.name == product_name and otc.quantity > 0:
+                                    if product_expiry:
+                                        otc.expiry = int(product_expiry)
+                                    otc.save()
+                        else:
+                            modeladmin.message_user(
+                                request,
+                                f"{product_name}은 아직 등록되지 않은 제품입니다.",
+                                level='WARNING'
+                            )
+                
+                modeladmin.message_user(request, "파일 처리가 완료되었습니다.")
+            except Exception as e:
+                modeladmin.message_user(request, f"오류 발생: {str(e)}", level='ERROR')
+
+
+@admin.register(ProductRegist)
+class ProductRegistAdmin(admin.ModelAdmin):
+    form = ProductRegistForm
+    list_display = ('file', 'uploaded_at')
+    actions = [process_files]  # 여기서 함수 이름만 문자열로 참조
+    
+    def save_model(self, request, obj, form, change):
+        files = request.FILES.getlist('file')
+        if files:  # 파일이 선택된 경우에만 처리
+            for f in files:
+                # 각 파일에 대해 새로운 ProductRegist 인스턴스 생성
+                instance = ProductRegist(file=f)
+                instance.save()
+        else:  # 파일이 없는 경우 기본 저장 동작 수행
+            super().save_model(request, obj, form, change)
     
     def delete_model(self, request, obj):
         if obj.file:

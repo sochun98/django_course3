@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import ValidationError
 
 
 class Return(models.Model):
@@ -136,3 +137,40 @@ class OutOfStock(models.Model):
     name = models.CharField(max_length=50)
     # 품절해제
     stock = models.BooleanField(default=False)
+
+
+class Payment(models.Model):
+    # 날짜
+    date = models.IntegerField()
+    # 거래처
+    company = models.CharField(max_length=50)
+    # 입고금액
+    stock = models.IntegerField(default=0)
+    # 결제금액
+    payment = models.IntegerField(default=0)
+    # 결제카드
+    card = models.CharField(max_length=20)
+    # 잔고금액 = stock - payment
+    balance = models.IntegerField(default=0)
+
+
+class StockUpload(models.Model):
+    file = models.FileField(upload_to='stock_files')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        try:
+            return str(self.file.name)
+        except:
+            return "Multiple files"
+    
+    def delete(self, *args, **kwargs):
+        if self.file:
+            self.file.delete(save=False)
+        super().delete(*args, **kwargs)
+    
+    def clean(self):
+        if hasattr(self.file, 'name'):
+            file_extension = self.file.name.split('.')[-1].lower()
+            if file_extension != 'xls':
+                raise ValidationError('올바른 파일 형식이 아닙니다. xls 파일만 업로드 가능합니다.')

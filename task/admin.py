@@ -1,13 +1,19 @@
 from django.contrib import admin
-from task.models import OutOfStock, Profit, Return, ReturnList, Set, Todo
+import xlrd
+from task.forms import StockUploadForm
+from task.models import OutOfStock, Payment, Profit, Return, ReturnList, Set, StockUpload, Todo
 
 
 @admin.action(description="제품 전체개수, 전체가격, 누적가격 계산하기")
 def total_quantity_price(modeladmin, request, queryset):
     cum_price = 0
     for row in queryset:
-        total_quantity = row.spec * row.spec_num + row.unit_num
-        total_price = total_quantity * row.unit_price
+        spec_num = row.spec_num or 0
+        unit_num = row.unit_num or 0
+        spec = row.spec or 1
+        
+        total_quantity = spec * spec_num + unit_num
+        total_price = total_quantity * (row.unit_price or 0)
         cum_price += total_price
         returns = Return.objects.filter(name__contains=row.name)
         if returns.exists():
@@ -23,13 +29,17 @@ def total_quantity_price(modeladmin, request, queryset):
 def product_return(modeladmin, request, queryset):
     data = []
     for row in queryset:
-        processed_row = row.name + ' : ' + str(int(row.spec_num)) + ' (통/박스 ), ' + str(int(row.unit_num)) + ' (개/낱개), 유통기한 : ' + str(int(row.expiry))
+        spec_num_str = str(int(row.spec_num)) if row.spec_num is not None else "0"
+        unit_num_str = str(float(row.unit_num)) if row.unit_num is not None else "0"
+        expiry_str = str(int(row.expiry)) if row.expiry is not None else "0"
+        
+        processed_row = f"{row.name} : {spec_num_str} (통/박스), {unit_num_str} (개/낱개), 유효기간 : {expiry_str}"
         data.append(processed_row)
         company = row.company
     
     combined_data = ", \n".join(data)
     
-    content = '안녕하세요 더샵참약국입니다.\n' + combined_data + '\n반품부탁드립니다 감사합니다!'
+    content = f"안녕하세요 더샵참약국입니다.\n{combined_data}\n반품부탁드립니다 감사합니다!"
     
     new_object = ReturnList(company=company, content=content)
     new_object.save()
@@ -55,7 +65,7 @@ class ReturnAdmin(admin.ModelAdmin):
 @admin.register(ReturnList)
 class ReturnListAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'datetime', 'company',
+        'datetime', 'company',
     ]
     fields = ['company', 'content',]
     search_fields = ['datetime', 'company', 'content',]
@@ -136,7 +146,7 @@ def average_calc(modeladmin, request, queryset):
     average_otc = int(sum_otc / days)
     average_presc_num = int(sum_presc_num / days)
     average_otc_num = int(sum_otc_num / days)
-    modeladmin.message_user(request, f"전체수익 : {sum_margin}, 평균수익 : {average_margin}, 평균조제료 : {average_presc}, 평균매출 : {average_otc}, 평균조제건수 : {average_presc_num}, 평균매출건수 : {average_otc_num}")
+    modeladmin.message_user(request, f"전체수익 : {sum_margin}, 평균수익 : {average_margin}, 전체조제료 : {sum_presc}, 평균조제료 : {average_presc}, 전체매출 : {sum_otc}, 평균매출 : {average_otc}, 평균조제건수 : {average_presc_num}, 평균매출건수 : {average_otc_num}")
     
 
 @admin.register(Profit)
@@ -172,3 +182,64 @@ class OutOfStockAdmin(admin.ModelAdmin):
     ]
     search_fields = ['name']
     list_filter = ['stock']
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = [
+        'date', 'company', 'stock', 'payment', 'balance', 'card',
+    ]
+    fields = [
+        'date', 'company', 'stock', 'payment', 'balance', 'card',
+    ]
+    list_filter = [
+        'company', 'card',
+    ]
+
+
+@admin.action(description="입고현황 업로드")
+def process_files(modeladmin, request, queryset):
+    for obj in queryset:
+        if obj.file:
+            try:
+                workbook = xlrd.open_workbook(file_contents=obj.file.read())
+                sheet = workbook.sheet_by_index(0)
+                
+                for row in range(sheet.nrows):
+                    if sheet.row_values(row)[0] != '입고일자':
+                        date = sheet.row_values(row)[0]
+                        company = sheet.row_values(row)[2]
+                        stock = sheet.row_values(row)[3]
+                        print(f"{date}, {company}, {stock}")
+                        
+            except Exception as e:
+                modeladmin.message_user(request, f"오류 발생: {str(e)}", level='ERROR')
+                        
+                        
+
+
+@admin.register(StockUpload)
+class StockUploadAdmin(admin.ModelAdmin):
+    form = StockUploadForm
+    list_display = ['file', 'uploaded_at']
+    actions = [process_files]
+    
+    def save_model(self, request, obj, form, change):
+        files = request.FILES.getlist('file')
+        if files:
+            for f in files:
+                instance = StockUpload(file=f)
+                instance.save()
+        else:
+            super().save_model(request, obj, form, change)
+    
+    def delete_model(self, request, obj):
+        if obj.file:
+            obj.file.delete(save=False)
+        obj.delete()
+    
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            if obj.file:
+                obj.file.delete(save=False)
+        queryset.delete()
