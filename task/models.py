@@ -141,7 +141,7 @@ class OutOfStock(models.Model):
 
 class Payment(models.Model):
     # 날짜
-    date = models.IntegerField()
+    date = models.IntegerField(null=True, blank=True)
     # 거래처
     company = models.CharField(max_length=50)
     # 입고금액

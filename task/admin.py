@@ -2,6 +2,7 @@ from django.contrib import admin
 import xlrd
 from task.forms import StockUploadForm
 from task.models import OutOfStock, Payment, Profit, Return, ReturnList, Set, StockUpload, Todo
+from django.db.models import Q
 
 
 @admin.action(description="제품 전체개수, 전체가격, 누적가격 계산하기")
@@ -184,17 +185,37 @@ class OutOfStockAdmin(admin.ModelAdmin):
     list_filter = ['stock']
 
 
+@admin.action(description="잔고금액 계산하기")
+def balance_calc(modeladmin, request, queryset):
+    balance_temp = 0
+    for row in queryset:
+        balance = int(row.balance)
+        if balance == 0:
+            stock = int(row.stock)
+            payment = int(row.payment)
+            balance = stock - payment + balance_temp
+            payments = Payment.objects.filter(Q(id=row.id))
+            for payment in payments:
+                payment.balance = balance
+                payment.save()
+                balance_temp = balance
+        else:
+            balance_temp = balance
+            
+
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = [
         'date', 'company', 'stock', 'payment', 'balance', 'card',
     ]
     fields = [
-        'date', 'company', 'stock', 'payment', 'balance', 'card',
+        'date', 'company', 'payment', 'card',
     ]
     list_filter = [
         'company', 'card',
     ]
+    search_fields = ['company']
+    actions = [balance_calc]
 
 
 @admin.action(description="입고현황 업로드")
@@ -207,15 +228,24 @@ def process_files(modeladmin, request, queryset):
                 
                 for row in range(sheet.nrows):
                     if sheet.row_values(row)[0] != '입고일자':
-                        date = sheet.row_values(row)[0]
+                        date = int(sheet.row_values(row)[0].replace('-', ''))
                         company = sheet.row_values(row)[2]
-                        stock = sheet.row_values(row)[3]
-                        print(f"{date}, {company}, {stock}")
+                        stock = int(sheet.row_values(row)[3].replace(',', ''))
                         
+                        payments = Payment.objects.filter(
+                            Q(date=date) &
+                            Q(company=company) &
+                            Q(stock=stock)
+                        )
+                        
+                        if not payments.exists():
+                            Payment(date=date, company=company, stock=stock).save()
+                            # print("새로운 입고장이 작성되었습니다.")
+                
+                modeladmin.message_user(request, "파일 처리가 완료되었습니다.")
+
             except Exception as e:
                 modeladmin.message_user(request, f"오류 발생: {str(e)}", level='ERROR')
-                        
-                        
 
 
 @admin.register(StockUpload)
