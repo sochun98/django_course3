@@ -209,7 +209,7 @@ class PaymentAdmin(admin.ModelAdmin):
         'date', 'company', 'stock', 'payment', 'balance', 'card',
     ]
     fields = [
-        'date', 'company', 'payment', 'card',
+        'date', 'company', 'stock', 'payment', 'card', 'balance',
     ]
     list_filter = [
         'company', 'card',

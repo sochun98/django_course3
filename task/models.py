@@ -149,7 +149,7 @@ class Payment(models.Model):
     # 결제금액
     payment = models.IntegerField(default=0)
     # 결제카드
-    card = models.CharField(max_length=20)
+    card = models.CharField(max_length=20, blank=True, null=True)
     # 잔고금액 = stock - payment
     balance = models.IntegerField(default=0)
 
