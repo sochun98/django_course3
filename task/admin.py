@@ -30,11 +30,12 @@ def total_quantity_price(modeladmin, request, queryset):
 def product_return(modeladmin, request, queryset):
     data = []
     for row in queryset:
+        spec = str(int(row.spec)) if row.spec is not None else "0"
         spec_num_str = str(int(row.spec_num)) if row.spec_num is not None else "0"
         unit_num_str = str(float(row.unit_num)) if row.unit_num is not None else "0"
         expiry_str = str(int(row.expiry)) if row.expiry is not None else "0"
         
-        processed_row = f"{row.name} : {spec_num_str} (통/박스), {unit_num_str} (개/낱개), 유효기간 : {expiry_str}"
+        processed_row = f"{row.name} : {spec_num_str} (통/박스 [{spec}] ), {unit_num_str} (개/낱개), 유효기간 : {expiry_str}"
         data.append(processed_row)
         company = row.company
     

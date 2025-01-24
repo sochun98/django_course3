@@ -18,7 +18,7 @@ class Return(models.Model):
     # 규격(정/병) (Specification)
     spec = models.IntegerField(null=True, blank=True)
     # 제조번호 (Lot Number)
-    lot = models.IntegerField(null=True, blank=True)
+    lot = models.CharField(max_length=30, null=True, blank=True)
     # 유효기간 (Expiry)
     expiry = models.IntegerField(null=True, blank=True)
     # 개수(병) (Spec Number)

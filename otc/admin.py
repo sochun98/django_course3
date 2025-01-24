@@ -36,7 +36,7 @@ class OtcAdmin(admin.ModelAdmin):
     list_display = [
         'name', 'company', 'quantity', 'target', 'order', 'expiry', 'last', 'get_ingredients',
     ]
-    fields = ['name', 'company', 'target', 'order', 'expiry', 'ingredients', 'effects', 'dosage', 'precautions', ]
+    fields = ['company', 'name', 'target', 'order', 'expiry', 'ingredients', 'effects', 'dosage', 'precautions', ]
     filter_horizontal = ['ingredients'] # 다대다 관계를 위한 편리한 인터페이스
     list_filter = ['order', ]
     search_fields = ['name', 'company', 'ingredients__name', 'effects',]
@@ -359,7 +359,11 @@ def process_files(modeladmin, request, queryset):
                             for otc in otcs:
                                 if otc.name == product_name and otc.quantity > 0:
                                     if product_expiry:
-                                        otc.expiry = int(product_expiry)
+                                        if otc.expiry:
+                                            if otc.expiry <= int(product_expiry):
+                                                otc.expiry = int(product_expiry)
+                                        else:
+                                            otc.expiry = int(product_expiry)
                                     otc.save()
                         else:
                             modeladmin.message_user(
