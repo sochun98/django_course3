@@ -57,7 +57,7 @@ class ReturnAdmin(admin.ModelAdmin):
     fields = [
         'company', 'name', 'entry', 'recall', 'completion', 'code', 'spec', 'lot', 'expiry', 'spec_num', 'unit_num', 'unit_price',
     ]
-    list_filter=['company']
+    list_filter = ['company']
     search_fields = ['name', 'company', ]
     actions = [total_quantity_price, product_return]
     # total_quantity = spec * spec_num + unit_num
@@ -67,9 +67,10 @@ class ReturnAdmin(admin.ModelAdmin):
 @admin.register(ReturnList)
 class ReturnListAdmin(admin.ModelAdmin):
     list_display = [
-        'datetime', 'company',
+        'company', 'datetime', 
     ]
     fields = ['company', 'content',]
+    list_filter = ['company']
     search_fields = ['datetime', 'company', 'content',]
 
 
@@ -165,7 +166,7 @@ class ProfitAdmin(admin.ModelAdmin):
 @admin.register(Todo)
 class TodoAdmin(admin.ModelAdmin):
     list_display = [
-        'datetime', 'must', 'checkbox',
+        'must', 'datetime', 'checkbox',
     ]
     fields = [
         'must', 'checkbox',

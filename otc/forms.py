@@ -1,5 +1,5 @@
 from django import forms
-from otc.models import OtcUpload, ProductRegist
+from otc.models import OtcUpload, RespiryRegist
 
 
 class OtcUploadForm(forms.ModelForm):
@@ -26,9 +26,9 @@ class MultipleFileField(forms.FileField):
         return result
 
 
-class ProductRegistForm(forms.ModelForm):
+class RespiryRegistForm(forms.ModelForm):
     file = MultipleFileField()
     
     class Meta:
-        model = ProductRegist
+        model = RespiryRegist
         fields = ['file']

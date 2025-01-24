@@ -5,8 +5,8 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.db import models
 import xlrd
-from otc.models import Otc, OtcUpload, OrderList, ProductRegist
-from otc.forms import OtcUploadForm, ProductRegistForm
+from otc.models import Otc, OtcUpload, OrderList, RespiryRegist
+from otc.forms import OtcUploadForm, RespiryRegistForm
 from openpyxl import load_workbook, Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from django.conf import settings
@@ -36,7 +36,7 @@ class OtcAdmin(admin.ModelAdmin):
     list_display = [
         'name', 'company', 'quantity', 'target', 'order', 'expiry', 'last', 'get_ingredients',
     ]
-    fields = ['company', 'name', 'target', 'order', 'expiry', 'ingredients', 'effects', 'dosage', 'precautions', ]
+    fields = ['company', 'name', 'target', 'order', 'expiry', 'old_expiry', 'ingredients', 'effects', 'dosage', 'precautions', ]
     filter_horizontal = ['ingredients'] # 다대다 관계를 위한 편리한 인터페이스
     list_filter = ['order', ]
     search_fields = ['name', 'company', 'ingredients__name', 'effects',]
@@ -238,10 +238,10 @@ class OtcUploadAdmin(admin.ModelAdmin):
 @admin.register(OrderList)
 class OrderListAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'datetime', 'company', 
-    ]
+        'company', 'datetime',
+        ]
     fields = ['company', 'content', ]
-    # list_filter = []
+    list_filter = ['company']
     search_fields = ['datetime', 'company', 'content', ]
 
 """
@@ -352,7 +352,7 @@ def process_files(modeladmin, request, queryset):
                     if sheet.row_values(row)[0] != '약품명':
                         product_name = sheet.row_values(row)[0]
                         product_expiry = sheet.row_values(row)[8]
-                        product_order = sheet.row_values(row)[3]
+                        # product_order = sheet.row_values(row)[3]
                         
                         otcs = Otc.objects.filter(name__contains=product_name)
                         if otcs.exists():
@@ -360,7 +360,8 @@ def process_files(modeladmin, request, queryset):
                                 if otc.name == product_name and otc.quantity > 0:
                                     if product_expiry:
                                         if otc.expiry:
-                                            if otc.expiry <= int(product_expiry):
+                                            if otc.expiry < int(product_expiry):
+                                                otc.old_expiry = otc.expiry
                                                 otc.expiry = int(product_expiry)
                                         else:
                                             otc.expiry = int(product_expiry)
@@ -377,9 +378,9 @@ def process_files(modeladmin, request, queryset):
                 modeladmin.message_user(request, f"오류 발생: {str(e)}", level='ERROR')
 
 
-@admin.register(ProductRegist)
-class ProductRegistAdmin(admin.ModelAdmin):
-    form = ProductRegistForm
+@admin.register(RespiryRegist)
+class RespiryRegistAdmin(admin.ModelAdmin):
+    form = RespiryRegistForm
     list_display = ('file', 'uploaded_at')
     actions = [process_files]  # 여기서 함수 이름만 문자열로 참조
     
@@ -388,7 +389,7 @@ class ProductRegistAdmin(admin.ModelAdmin):
         if files:  # 파일이 선택된 경우에만 처리
             for f in files:
                 # 각 파일에 대해 새로운 ProductRegist 인스턴스 생성
-                instance = ProductRegist(file=f)
+                instance = RespiryRegist(file=f)
                 instance.save()
         else:  # 파일이 없는 경우 기본 저장 동작 수행
             super().save_model(request, obj, form, change)

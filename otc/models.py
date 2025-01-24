@@ -15,6 +15,8 @@ class Otc(models.Model):
     order = models.DecimalField(max_digits=5, decimal_places=2, default=False, null=True, blank=True)
     # 유효기간
     expiry = models.IntegerField(null=True, blank=True)
+    # 이전 유효기간
+    old_expiry = models.IntegerField(null=True, blank=True)
     # 마지막 주문량
     last = models.DecimalField(max_digits=5, decimal_places=2, default=False, null=True, blank=True)
     # 성분
@@ -45,8 +47,8 @@ class OrderList(models.Model):
     content = models.TextField(blank=True, null=True)
     
 
-class ProductRegist(models.Model):
-    file = models.FileField(upload_to='productregist_files/')
+class RespiryRegist(models.Model):
+    file = models.FileField(upload_to='respiryregist_files/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
