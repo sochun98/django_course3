@@ -48,7 +48,7 @@ class OrderList(models.Model):
     
 
 class RespiryRegist(models.Model):
-    file = models.FileField(upload_to='respiryregist_files/')
+    file = models.FileField(upload_to='otc_respiryregist_files/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

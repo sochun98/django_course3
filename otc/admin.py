@@ -1,4 +1,5 @@
 import decimal
+import os
 # import os
 from django.contrib import admin
 from django.shortcuts import render
@@ -24,7 +25,7 @@ def product_order(modeladmin, request, queryset):
     
     combined_data = ", \n".join(data)
         
-    content = '안녕하세요 더샵참약국입니다.\n' + combined_data + '\n주문할게요 감사합니다!'
+    content = '안녕하세요 더샵참약국입니다.\n\n' + combined_data + '\n\n주문할게요 감사합니다!'
     
     new_object = OrderList(company=company, content=content)
     new_object.save()
@@ -352,7 +353,7 @@ def process_files(modeladmin, request, queryset):
                     if sheet.row_values(row)[0] != '약품명':
                         product_name = sheet.row_values(row)[0]
                         product_expiry = sheet.row_values(row)[8]
-                        # product_order = sheet.row_values(row)[3]
+                        product_order = sheet.row_values(row)[3]
                         
                         otcs = Otc.objects.filter(name__contains=product_name)
                         if otcs.exists():
@@ -365,7 +366,8 @@ def process_files(modeladmin, request, queryset):
                                                 otc.expiry = int(product_expiry)
                                         else:
                                             otc.expiry = int(product_expiry)
-                                    otc.save()
+                                otc.last = product_order
+                                otc.save()
                         else:
                             modeladmin.message_user(
                                 request,
@@ -401,6 +403,14 @@ class RespiryRegistAdmin(admin.ModelAdmin):
     
     def delete_queryset(self, request, queryset):
         for obj in queryset:
-            if obj.file:
-                obj.file.delete(save=False)
+            try:
+                if obj.file:
+                    file_path = obj.file.path
+                    obj.file.close()
+                    obj.file.delete(save=False)
+                    
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+            except PermissionError:
+                continue
         queryset.delete()
