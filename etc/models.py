@@ -17,9 +17,9 @@ class Etc(models.Model):
     # 재고량(7)
     quantity = models.DecimalField(max_digits=6, decimal_places=4, default=False)
     # 적정재고량
-    quantity = models.DecimalField(max_digits=6, decimal_places=4, default=False)
+    target = models.DecimalField(max_digits=6, decimal_places=4, default=False)
     # 주문량 = 적정재고량 - 재고량
-    quantity = models.DecimalField(max_digits=6, decimal_places=4, default=False, null=True, blank=True)
+    order = models.DecimalField(max_digits=6, decimal_places=4, default=False, null=True, blank=True)
     # 유효기간
     expiry = models.IntegerField(null=True, blank=True)
     # 이전 유효기간
