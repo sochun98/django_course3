@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.forms import ValidationError
 from ingredient.models import Ingredient
@@ -5,9 +6,9 @@ from ingredient.models import Ingredient
 
 class Etc(models.Model):
     # 약품명(0)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=100)
     # 약품코드(1)
-    code = models.CharField(max_length=20)
+    code = models.CharField(max_length=20, null=True, blank=True)
     # 성분명(2)
     ingredients = models.ManyToManyField(Ingredient, related_name='etc_products', blank=True)
     # 제조업체(3)
@@ -15,11 +16,11 @@ class Etc(models.Model):
     # 상한가(4)
     price = models.IntegerField(null=True, blank=True)
     # 재고량(7)
-    quantity = models.DecimalField(max_digits=6, decimal_places=4, default=False)
+    quantity = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.0000'))
     # 적정재고량
-    target = models.DecimalField(max_digits=6, decimal_places=4, default=False)
+    target = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.0000'))
     # 주문량 = 적정재고량 - 재고량
-    order = models.DecimalField(max_digits=6, decimal_places=4, default=False, null=True, blank=True)
+    order = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.0000'), null=True, blank=True)
     # 유효기간
     expiry = models.IntegerField(null=True, blank=True)
     # 이전 유효기간
