@@ -5,6 +5,9 @@ from task.models import OutOfStock, Payment, Profit, Return, ReturnList, Set, St
 from django.db.models import Q
 
 
+admin.site.site_header = "Pharmacy Management"
+
+
 @admin.action(description="제품 전체개수, 전체가격, 누적가격 계산하기")
 def total_quantity_price(modeladmin, request, queryset):
     cum_price = 0
@@ -158,9 +161,10 @@ class ProfitAdmin(admin.ModelAdmin):
         'date', 'margin_sum', 'presc_sum', 'otc_in', 'presc_num', 'otc_num',
     ]
     fields = [
-        'date', 'bill_10k', 'bill_5k', 'bill_1k', 'otc_discount', 'otc_margin', 'amount_billing', 'presc_num', 'otc_num', 'presc_in', 'presc_bill', 'presc_card', 'otc_in', 'otc_bill', 'otc_card', 'medicine_insur', 'medicine_nonsur', 'presc_insur', 'presc_nonsur', 'card_in', 'bill', 'presc_sum', 'presc_calc', 'otc_calc', 'bill_calc', 'card_calc', 'presc_gap', 'otc_gap', 'card_gap', 'bill_gap',
+        'date', ('bill_10k', 'bill_5k', 'bill_1k'), ('otc_discount', 'otc_margin'), 'amount_billing', ('presc_num', 'otc_num'), ('presc_in', 'presc_bill', 'presc_card'), ('otc_in', 'otc_bill', 'otc_card'), ('medicine_insur', 'medicine_nonsur'), ('presc_insur', 'presc_nonsur'), 'card_in', 'bill', 'presc_sum', ('presc_calc', 'otc_calc'), ('bill_calc', 'card_calc'), ('presc_gap', 'otc_gap'), ('card_gap', 'bill_gap'),
     ]
     actions = [profit_calc, average_calc]
+    list_per_page = 27
 
 
 @admin.register(Todo)
@@ -189,10 +193,13 @@ class OutOfStockAdmin(admin.ModelAdmin):
 
 @admin.action(description="잔고금액 계산하기")
 def balance_calc(modeladmin, request, queryset):
-    balance_temp = 0
+    i = 0
     for row in queryset:
-        balance = int(row.balance)
-        if balance == 0:
+        if i == 0:
+            balance_temp = int(row.balance)
+            i += 1
+        else:
+            balance = int(row.balance)
             stock = int(row.stock)
             payment = int(row.payment)
             balance = stock - payment + balance_temp
@@ -201,8 +208,19 @@ def balance_calc(modeladmin, request, queryset):
                 payment.balance = balance
                 payment.save()
                 balance_temp = balance
-        else:
-            balance_temp = balance
+            i += 1
+
+
+@admin.action(description="재고, 결제, 합계 구하기")
+def sum_calc(modeladmin, request, queryset):
+    # days = len(queryset)
+    sum_stock = 0
+    sum_payment = 0
+    for row in queryset:
+        sum_stock += row.stock
+        sum_payment += row.payment
+
+    modeladmin.message_user(request, f"재고합계 : {sum_stock}, 결제합계 : {sum_payment}")
             
 
 @admin.register(Payment)
@@ -216,8 +234,8 @@ class PaymentAdmin(admin.ModelAdmin):
     list_filter = [
         'company', 'card',
     ]
-    search_fields = ['company']
-    actions = [balance_calc]
+    search_fields = ['company', 'card']
+    actions = [balance_calc, sum_calc]
 
 
 @admin.action(description="입고현황 업로드")

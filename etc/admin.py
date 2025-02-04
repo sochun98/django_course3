@@ -32,6 +32,7 @@ class EtcAdmin(admin.ModelAdmin):
     fields = [
         'company', 'name', 'code', 'price', 'target', 'order', 'expiry', 'old_expiry', 'ingredients', 'effects', 'dosage', 'precautions', 
         ]
+    ordering = ['name']
     filter_horizontal = ['ingredients'] # 다대다 관계를 위한 편리한 인터페이스
     list_filter = ['order', ]
     search_fields = [
