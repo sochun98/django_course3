@@ -1,0 +1,30 @@
+<h1>Todo List</h1>
+
+django template
+<br>
+{{ todos }}
+<br><br>
+
+{% for todo in todos %}
+    <br>
+    {{ todo }}
+    <br>
+    {% if todo.description %}
+        {{ todo.description }}
+    {% else %}
+        No description
+    {% endif %}
+    <br>
+    {{ todo.complete }}
+    <br>
+    {{ todo.created_at }}
+    <br>
+{% endfor %}
+
+<br>
+{{ todo }}
+<br>
+{{ first }}
+<br>
+{{ last }}
+ 

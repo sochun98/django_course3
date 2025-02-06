@@ -31,18 +31,25 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
+CUSTOM_APPS = [
+    'etc',
+    'otc',
+    'ingredient',
+    'task',
+    'todo',
+]
+
+THIRD_PARTY_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'etc',
-    'otc',
-    'ingredient',
-    'task',
+    'rest_framework',
 ]
+
+INSTALLED_APPS = CUSTOM_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -59,7 +66,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -137,3 +144,7 @@ FILE_UPLOAD_HANDLERS = [
 
 # FILE_URL = '/file/'
 # FILE_ROOT = os.path.join(BASE_DIR, 'file')
+
+REST_FRAMEWORK = {
+    
+}
