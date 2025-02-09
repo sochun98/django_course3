@@ -1,10 +1,13 @@
 from django.urls import path
-from todo.apis import TodoCreateAPI, TodoDeleteAPI, TodoListAPI, TodoRetrieveAPI, TodoUpdateAPI
+from todo.apis import TodoCreateAPI, TodoDeleteAPI, TodoGenericsCreateAPI, TodoGenericsListAPI, TodoGenericsListCreateAPI, TodoListAPI, TodoRetrieveAPI, TodoUpdateAPI
 from todo.views import todo_list, todo_detail, todo_detail_name
 
 
 # http://127.0.0.1:8000/todo/
 urlpatterns = [
+    path("generics/", TodoGenericsListCreateAPI.as_view()),
+    path("generics/create/", TodoGenericsCreateAPI.as_view()),
+    path("generics/list/", TodoGenericsListAPI.as_view()),
     path("create/", TodoCreateAPI.as_view()),
     path("list/", TodoListAPI.as_view()),
     path("retrieve/<int:pk>/", TodoRetrieveAPI.as_view()),
