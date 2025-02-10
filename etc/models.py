@@ -34,7 +34,7 @@ class Etc(models.Model):
 
 
 class EtcUpload(models.Model):
-    file = models.FileField(upload_to='etc_files/')
+    file = models.FileField(upload_to='files/etc_files/')
     
     def delete(self, *args, **kwargs):
         if self.file:
@@ -52,7 +52,7 @@ class OrderList(models.Model):
 
 
 class RespiryRegist(models.Model):
-    file = models.FileField(upload_to='etc_respiryregist_files/')
+    file = models.FileField(upload_to='files/etc_respiryregist_files/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

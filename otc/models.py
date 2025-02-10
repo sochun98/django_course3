@@ -30,7 +30,7 @@ class Otc(models.Model):
 
 
 class OtcUpload(models.Model):
-    file = models.FileField(upload_to='otc_files/')
+    file = models.FileField(upload_to='files/otc_files/')
     
     def delete(self, *args, **kwargs):
         if self.file:

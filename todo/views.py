@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.views import View
 from todo.models import Todo
 
 
@@ -27,3 +28,24 @@ def todo_detail_name(request, name):
     first = todo.first()
     last = todo.last()
     return render(request, "todo/todo.html", {"todo": todo, "first": first, "last": last})
+
+
+class TodoCreateView(View):
+    
+    def get(self, request):
+        return render(request, "todo/create.html")
+
+
+class TodoListView(View):
+    
+    def get(self, request):
+        return render(request, "todo/list2.html")
+
+
+"""
+class TodoListView(View):
+    
+    def get(self, request):
+        todos = Todo.objects.all()
+        return render(request, "todo/list.html", {"todos": todos})
+"""

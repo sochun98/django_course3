@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+}
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+label {
+    display: block;
+    font-weight: bold;
+}
+.listcontainer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+h1 {
+    text-align: center;
+}
+.todo-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+.todo-item p {
+    margin: 5px 0;
+}

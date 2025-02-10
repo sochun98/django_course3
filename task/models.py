@@ -155,7 +155,7 @@ class Payment(models.Model):
 
 
 class StockUpload(models.Model):
-    file = models.FileField(upload_to='stock_files')
+    file = models.FileField(upload_to='files/stock_files')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

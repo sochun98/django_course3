@@ -7,6 +7,7 @@ from config.views import RandomNumberTemplateView, RandomNumberView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("api/todo/", include("todo.api_urls")),
     path("todo/", include("todo.urls")),
     path("task/", include("task.urls")),
     path("random/template/", RandomNumberTemplateView.as_view()),
