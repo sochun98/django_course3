@@ -9,9 +9,9 @@
 <script>
     $(document).ready(function() {
         axiosInstance.get("/api/todo/list/")
-        .then(function(response){
+        .then(function(response) {
             // console.log(response.data);
-            for (var i = 0; i < response.data.length; i++){
+            for (var i = 0; i < response.data.length; i++) {
                 var todo = response.data[i]
                 // console.log(todo);
                 var todoElement = `
@@ -26,7 +26,7 @@
                 $(".listcontainer").append(todoElement)
             }
         })
-        .catch(function(error){
+        .catch(function(error) {
             console.log(error)
         })
     })

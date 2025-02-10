@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Todo Create</h1>
+
+    <div class="container">
+        <h2>Create a New Todo</h2>
+        <div>
+            <label for="must">해야할 일:</label>
+            <input type="text" id="must" name="must" maxlength="100" required>
+        </div>
+        <div>
+            <label for="checkbox">완료:</label>
+            <input type="checkbox" id="checkbox" name="checkbox">
+        </div>
+        <div>
+            <button type="submit" id="todoCreate">Create</button>
+        </div>
+    </div>
+
+    <script>
+        $("#todoCreate").on("click", function() {
+            axiosInstance.post("/api/task/todo/create/", {
+                must: $("#must").val(),
+                checkbox: $("#checkbox").is(":checked"),
+            })
+            .then(function(response) {
+                window.location.href = "/task/todo/list/";
+            })
+            .catch(function(error) {
+                console.log(error);
+                alert("Todo 생성에 실패했습니다.");
+            })
+        })
+    </script>
+
+{% endblock %}
