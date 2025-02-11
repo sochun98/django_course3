@@ -30,3 +30,80 @@ h1 {
 .todo-item p {
     margin: 5px 0;
 }
+.todoDetail {
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    margin: 10px;
+}
+.btnList {
+    text-align: center;
+}
+.todoCreate,
+.todoUpdate,
+.todoList,
+.todoDelete {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    transition: background-color 0.3s;
+}
+.todoUpdate:hover,
+.todoDelete:hover {
+    background-color: #0056b3;
+}
+.todoDelete {
+    background-color: #ff5e5e;
+}
+.todoDelete:hover {
+    background-color: coral;
+}
+/* 체크박스 커스터마이징 */
+.custom-checkbox {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+}
+.custom-checkbox input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.custom-checkbox .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #eee; /* 기본 배경색 */
+    border: 1px solid #ccc;
+}
+.custom-checkbox input[type="checkbox"]:checked ~ .checkmark {
+    background-color: #2196F3; /* 체크되었을 때의 배경색 */
+}
+.custom-checkbox .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+.custom-checkbox input[type="checkbox"]:checked ~ .checkmark:after {
+    display: block;
+}
+.custom-checkbox .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}

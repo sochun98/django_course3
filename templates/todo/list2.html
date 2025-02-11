@@ -2,25 +2,33 @@
 
 {% block content %}
 
-<h1>Todo List</h1>
-    <div class="listcontainer">
-    </div>
+
+<div class="listcontainer">
+    <h1>Todo List</h1>
+    <button class="todoCreate" onclick="window.location.href='/todo/create/'">Create</button>
+</div>
 
 <script>
+    // 페이지 로드시
     $(document).ready(function() {
         axiosInstance.get("/api/todo/list/")
         .then(function(response) {
-            // console.log(response.data);
             for (var i = 0; i < response.data.length; i++) {
                 var todo = response.data[i]
-                // console.log(todo);
+                var checked = todo.complete ? 'checked' : '';  // 체크박스 상태 설정
                 var todoElement = `
-                    <div class="todo-item">
+                    <div class="todo-item" onclick="detailView(${todo.id})">
                         <p><strong>Name:</strong> ${todo.name}</p>
                         <p><strong>Description:</strong> ${todo.description}</p>
-                        <p><strong>Complete:</strong> ${todo.complete}</p>
-                        <p><strong>Completed At:</strong> ${todo.completed_at}</p>
+                        <p><strong>Complete:</strong>
+                            <label class="custom-checkbox">
+                                <input type="checkbox" ${checked} disabled>
+                                <span class="checkmark"></span>
+                            </label>
+                         </p>
+                        <p><strong>Completed At:</strong> ${datetimeToString(todo.completed_at)}</p>
                         <p><strong>Experience Points:</strong> ${todo.exp}</p>
+                        <button class="todoUpdate" onclick="toComplete(${todo.id}, event)">완료</button>
                     </div>
                 `
                 $(".listcontainer").append(todoElement)
@@ -30,6 +38,52 @@
             console.log(error)
         })
     })
+
+    function detailView(id) {
+        window.location.href = `/todo/${id}/`;
+    }
+
+    function toComplete(id) {
+        event.stopPropagation(); // 이벤트 버블링을 막습니다
+        axiosInstance.patch(`/api/todo/update/${id}/`, {
+            complete: true,
+        })
+        .then(function(response) {
+            // 기존 todo 아이템들을 제거
+            $(".todo-item").remove();
+
+            // 데이터만 새로 불러오기
+            axiosInstance.get("/api/todo/list/")
+            .then(function(response) {
+                for (var i = 0; i < response.data.length; i++) {
+                    var todo = response.data[i]
+                    var checked = todo.complete ? 'checked' : '';  // 체크박스 상태 설정
+                    var todoElement = `
+                        <div class="todo-item" onclick="detailView(${todo.id})">
+                            <p><strong>Name:</strong> ${todo.name}</p>
+                            <p><strong>Description:</strong> ${todo.description}</p>
+                            <p><strong>Complete:</strong>
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" ${checked} disabled>
+                                    <span class="checkmark"></span>
+                                </label>
+                             </p>
+                            <p><strong>Completed At:</strong> ${datetimeToString(todo.completed_at)}</p>
+                            <p><strong>Experience Points:</strong> ${todo.exp}</p>
+                            <button class="todoUpdate" onclick="toComplete(${todo.id}, event)">완료</button>
+                        </div>
+                    `
+                    $(".listcontainer").append(todoElement)
+                }
+            })
+            .catch(function(error) {
+                console.log(error)
+            })
+        })
+        .catch(function(error) {
+            console.log(error) 
+        })
+    }
 </script>
 
 {% endblock %}

@@ -1,0 +1,63 @@
+// Todo 아이템을 렌더링하는 함수를 분리
+function renderTodoItem(todo) {
+    return `
+        <div class="todo-item" onclick="detailView(${todo.id})">
+            <p><strong>Name:</strong> ${todo.name}</p>
+            <p><strong>Description:</strong> ${todo.description}</p>
+            <p><strong>Complete:</strong>
+                <label class="custom-checkbox">
+                    <input type="checkbox" ${todo.complete ? 'checked' : ''} disabled>
+                    <span class="checkmark"></span>
+                </label>
+             </p>
+            <p><strong>Completed At:</strong> ${datetimeToString(todo.completed_at)}</p>
+            <p><strong>Experience Points:</strong> ${todo.exp}</p>
+            <button class="todoUpdate" onclick="toComplete(${todo.id}, event)">완료</button>
+        </div>
+    `;
+}
+
+// Todo 리스트를 불러오고 렌더링하는 함수
+function loadAndRenderTodos() {
+    return axiosInstance.get("/api/todo/list/")
+        .then(function(response) {
+            const todoHTML = response.data.map(renderTodoItem).join('');
+            $(".listcontainer").find('.todo-item').remove();
+            $(".listcontainer").append(todoHTML);
+        })
+        .catch(function(error) {
+            console.log(error);
+        });
+}
+
+// 페이지 로드시
+$(document).ready(loadAndRenderTodos);
+
+function detailView(id) {
+    window.location.href = `/todo/${id}/`;
+}
+
+function toComplete(id, event) {
+    event.stopPropagation();
+    
+    // 현재 완료한 todo 아이템의 위치를 찾습니다
+    const completedItem = $(event.target).closest('.todo-item');
+    const itemOffset = completedItem.offset().top - $(window).scrollTop();
+    
+    axiosInstance.patch(`/api/todo/update/${id}/`, {
+        complete: true,
+    })
+    .then(function(response) {
+        // 데이터를 새로 불러온 후 스크롤 위치를 조정합니다
+        loadAndRenderTodos().then(() => {
+            const newItem = $(`.todo-item:contains(${completedItem.find('p:first').text()})`);
+            if (newItem.length) {
+                const newScrollTop = newItem.offset().top - itemOffset;
+                $(window).scrollTop(newScrollTop);
+            }
+        });
+    })
+    .catch(function(error) {
+        console.log(error);
+    });
+}

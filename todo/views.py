@@ -49,3 +49,14 @@ class TodoListView(View):
         todos = Todo.objects.all()
         return render(request, "todo/list.html", {"todos": todos})
 """
+
+class TodoDetailView(View):
+    
+    def get(self, request, pk):
+        return render(request, "todo/detail.html")
+
+
+class TodoUpdateView(View):
+    
+    def get(self, request, pk):
+        return render(request, "todo/update.html")

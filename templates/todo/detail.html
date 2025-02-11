@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="todoDetail">
+</div>
+
+<div class="btnList">
+    <button class="todoUpdate" onclick="toUpdate()">수정</button>
+    <button class="todoDelete" onclick="toDelete()">삭제</button>
+    <button class="todoList" onclick="window.location.href='/todo/list/'">List</button>
+</div>
+
+<script>
+    $(document).ready(function() {
+        pk = window.location.href.split('/').filter(Boolean).pop();
+        axiosInstance.get(`/api/todo/retrieve/${pk}/`)
+        .then(function(response) {
+            todo = response.data;
+            var todoElement = `
+                    <div class="todo-item">
+                        <p><strong>Name:</strong> ${todo.name}</p>
+                        <p><strong>Description:</strong> ${todo.description}</p>
+                        <p><strong>Complete:</strong> ${todo.complete ? "완료" : "진행중"}</p>
+                        <p><strong>Completed At:</strong> ${datetimeToString(todo.completed_at)}</p>
+                        <p><strong>Experience Points:</strong> ${todo.exp}</p>
+                    </div>
+                `
+            $(".todoDetail").append(todoElement)
+        })
+        .catch(function(error) {
+            console.log(error);
+        })
+    })
+
+    function toUpdate() {
+        pk = window.location.href.split('/').filter(Boolean).pop();
+        window.location.href = `/todo/update/${pk}/`;
+    }
+
+    function toDelete() {
+        pk = window.location.href.split('/').filter(Boolean).pop();
+        if (confirm("정말 해당 Todo를 삭제하시겠습니까?")) {
+            axiosInstance.delete(`/api/todo/delete/${pk}/`)
+            .then(function(response) {
+                window.location.href = "/todo/list/";
+            })
+            .catch(function(error) {
+                alert("Todo 삭제에 실패했습니다.");
+            })
+        }
+    }
+</script>
+
+{% endblock %}

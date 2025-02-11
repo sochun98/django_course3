@@ -23,19 +23,21 @@
             <input type="number" id="exp" name="exp" min="0" value="0">
         </div>
         <div>
-            <button type="submit" id="todoCreate">Create</button>
+            <button class="todoCreate" type="submit" id="todoCreate">Create</button>
         </div>
     </div>
 
     <script>
-        // document.querySelector("#todoCreate").addEventListener("click", function() {
         $("#todoCreate").on("click", function() {
-            // console.log($("#complete").is(":checked"));
+            let exp = $("#exp").val();
+            if (exp === "") {
+                exp = 0;
+            }
             axiosInstance.post("/api/todo/create/", {
                 name: $("#name").val(),
                 description: $("#description").val(),
                 complete: $("#complete").is(":checked"),
-                exp: $("#exp").val(),
+                exp: exp,
             })
             .then(function(response) {
                 window.location.href = "/todo/list/";

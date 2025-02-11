@@ -17,7 +17,7 @@ class TodoCreateAPI(APIView):
 class TodoListAPI(APIView):
     
     def get(self, request):
-        todos = Todo.objects.all() # QuerySet = Object list
+        todos = Todo.objects.all().order_by("-created_at") # QuerySet = Object list
         serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
