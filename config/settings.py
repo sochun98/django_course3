@@ -153,5 +153,7 @@ FILE_UPLOAD_HANDLERS = [
 # FILE_ROOT = os.path.join(BASE_DIR, 'file')
 
 REST_FRAMEWORK = {
-    
+    # "DEFAULT_PAGINATION_CLASS":"rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS":"api.pagination.CustomPageNumberPagination",
+    "PAGE_SIZE":10,
 }
