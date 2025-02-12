@@ -42,14 +42,6 @@ class TodoListView(View):
         return render(request, "todo/list2.html")
 
 
-"""
-class TodoListView(View):
-    
-    def get(self, request):
-        todos = Todo.objects.all()
-        return render(request, "todo/list.html", {"todos": todos})
-"""
-
 class TodoDetailView(View):
     
     def get(self, request, pk):

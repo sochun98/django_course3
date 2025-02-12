@@ -8,7 +8,7 @@
 <div class="btnList">
     <button class="todoUpdate" onclick="toUpdate()">수정</button>
     <button class="todoDelete" onclick="toDelete()">삭제</button>
-    <button class="todoList" onclick="window.location.href='/todo/list/'">List</button>
+    <button class="todoList" onclick="toList()">List</button>
 </div>
 
 <script>
@@ -49,6 +49,11 @@
                 alert("Todo 삭제에 실패했습니다.");
             })
         }
+    }
+
+    function toList() {
+        const savedPage = localStorage.getItem('todoListPage') || 1;
+        window.location.href = `/todo/list/?page=${savedPage}`;
     }
 </script>
 

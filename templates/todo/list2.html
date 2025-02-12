@@ -18,11 +18,18 @@
     let current_Page = 1;
 
     // 페이지 로드시
-    $(document).ready(() => loadAndRenderTodos(current_Page));
+    // $(document).ready(() => loadAndRenderTodos(current_Page));
+    $(document).ready(() => {
+        // URL에서 페이지 파라미터 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        const page = parseInt(urlParams.get('page')) || localStorage.getItem('todoListPage') || 1;
+        loadAndRenderTodos(page);
+    });
 
     // Todo 리스트를 불러오고 렌더링하는 함수
     function loadAndRenderTodos(page) {
         current_Page = page; // 현재 페이지 번호 업데이트
+        localStorage.setItem('todoListPage', page); // 현재 페이지를 localStorage에 저장
         return axiosInstance.get(`/api/todo/viewsets/?page=${page}`)
         .then(function(response) {
             const todoHTML = response.data.data.map(renderTodoItem).join('');
@@ -38,31 +45,33 @@
     // 페이징 링크 생성 - 현재 페이지 강조 표시
     function pageLink(pagination) {
         var pageLinks = "";
-        // console.log(pagination.total_page);
-        /*
+        
         if (pagination.total_page > 1) {
-            var currentPage = pagination.currnet_page;
+            var currentPage = pagination.current_page;
             var totalPages = pagination.total_page;
-            var maxDisplayedPages = 10;
-            
+            var maxDisplayedPages = 11;
+            var gap = (maxDisplayedPages / 2) | 0;
 
-            var startPage = Math.max(1, currentPage - 5);
-            var endPage = Math.min(totalPages, currnetPage + 5);
+            var startPage = Math.max(1, currentPage - gap);
+            var endPage = Math.min(totalPages, currentPage + gap);
 
-            if (currnetPage - startPage < 5) {
-                endPage = Math.min(endPage + (5 - (currnetPage - startPage)), totalPages);
+            if (currentPage - startPage < gap) {
+                endPage = Math.min(endPage + (gap - (currentPage - startPage)), totalPages);
             }
-            if (endPage - currentPage < 5) {
-                startPage = Math.max(startPage - (5 - (endPage - currentPage)), 1);
+            if (endPage - currentPage < gap) {
+                startPage = Math.max(startPage - (gap - (endPage - currentPage)), 1);
             }
         }
-            */
-        //console.log(currentPage);
-        //console.log(totalPage);
-        //console.log(endPage);
-        for (var i = 1; i <= pagination.total_page; i++) {
+        
+        if (startPage > 1) {
+            pageLinks += `<a href="#" class="page-link" onclick="loadAndRenderTodos(1)">처음</a>`;
+        }
+        for (var i = startPage; i <= endPage; i++) {
             const activeClass = i === current_Page ? 'active' : '';
             pageLinks += `<a href="#" class="page-link ${activeClass}" onclick="loadAndRenderTodos(${i})">${i}</a>`;
+        }
+        if (endPage < totalPages) {
+            pageLinks += `<a href="#" class="page-link" onclick="loadAndRenderTodos(${totalPages})">마지막</a>`;
         }
         return pageLinks;
     }
