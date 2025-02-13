@@ -81,6 +81,7 @@
         const completionButton = !todo.complete ? `<button class="todoUpdate" onclick="toComplete(${todo.id}, event)">완료</button>` : '';
         return `
             <div class="todo-item" onclick="detailView(${todo.id})">
+                <div>
                 <p><strong>Name:</strong> ${todo.name}</p>
                 <p><strong>Description:</strong> ${todo.description}</p>
                 <p><strong>Complete:</strong>
@@ -91,7 +92,10 @@
                  </p>
                 <p><strong>Completed At:</strong> ${datetimeToString(todo.completed_at)}</p>
                 <p><strong>Experience Points:</strong> ${todo.exp}</p>
+                </div>
+                <div class="completion">
                 ${completionButton}
+                </div>
             </div>
         `;
     }

@@ -1,8 +1,14 @@
-from django.urls import path
-from task.apis import TodoCreateAPI, TodoDeleteAPI, TodoListAPI, TodoRetrieveAPI, TodoUpdateAPI
+from django.urls import include, path
+from task.apis import TodoCreateAPI, TodoDeleteAPI, TodoListAPI, TodoRetrieveAPI, TodoUpdateAPI, TodoViewSet
+from rest_framework.routers import DefaultRouter
+
+
+router = DefaultRouter()
+router.register("", TodoViewSet)
 
 # http://127.0.0.1:8000/api/task/
 urlpatterns = [
+    path("todo/viewsets/", include(router.urls)),
     path("todo/create/", TodoCreateAPI.as_view()),
     path("todo/list/", TodoListAPI.as_view()),
     path("todo/retrieve/<int:pk>/", TodoRetrieveAPI.as_view()),

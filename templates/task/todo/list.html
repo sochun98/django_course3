@@ -4,28 +4,126 @@
 
 <div class="listcontainer">
     <h1>Todo List</h1>
+    <button class="todoCreate" onclick="window.location.href='/task/todo/create/'">Create</button>
+    <div class="pagination">
+    </div>
+</div>
+
+<div class="pagination">
 </div>
 
 <script>
-    $(document).ready(function() {
-        axiosInstance.get("/api/task/todo/list/")
-        .then(function(response) {
-            for (var i = 0; i < response.data.length; i++) {
-                var todo = response.data[i];
-                var todoElement = `
-                    <div class="todo-item">
-                        <p><strong>해야할 일:</strong> ${todo.must}</p>
-                        <p><strong>작성:</strong> ${todo.datetime}</p>
-                        <p><strong>완료:</strong> ${todo.checkbox}</p>
-                    </div>
-                `
-                $(".listcontainer").append(todoElement)
-            }
+    // 현재 페이지 번호 전역 변수
+    let current_Page = 1;
+
+    // 페이지 로드시
+    $(document).ready(() => {
+        // URL에서 페이지 파라미터 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        const page = paarseInt(urlParams.get('page')) || localStorage.getItem('todoListPage') || 1;
+        loadAndRenderTodos(page);
+    });
+
+    // Todo 리스트를 불러오고 렌터링하는 함수를
+    function loadAndRenderTodos(page) {
+        current_Page = page; // 현재 페이지 번호 업데이트
+        localStorage.setItem('todoListPage', page); // 현재 페이지를 localStorage에 저장
+        return axiosInstance.get(`/api/task/todo/viewsets/?page=${page}`)
+        .then(function(responxe) {
+            const todoHTML = response.data.data.map(renderTodoItem).join('');
+            $(".listcontainer").find('.todo-item').remove();
+            $(".listcontainer").append(todoHTML);
+            $(".pagination").html(pageLink(response.data));
         })
         .catch(function(error) {
-            console.log(error)
+            console.log(error);
+        });
+    }
+
+    // 페이징 링크 생성 - 현재 페이지 강조 표시
+    function pageLink(pagination) {
+        var pageLinks = "";
+        
+        if (pagination.total_page > 1) {
+            var currentPage = pagination.current_page;
+            var totalPages = pagination.total_page;
+            var maxDisplayedPages = 11;
+            var gap = (maxDisplayedPages / 2) | 0;
+
+            var startPage = Math.max(1, currentPage - gap);
+            var endPage = Math.min(totalPages, currentPage + gap);
+
+            if (currentPage - startPage < gap) {
+                endPage = Math.min(endPage + (gap - (currentPage - startPage)), totalPages);
+            }
+            if (endPage - currentPage < gap) {
+                startPage = Math.max(startPage - (gap - (endPage - currentPage)), 1);
+            }
+        }
+        
+        if (startPage > 1) {
+            pageLinks += `<a href="#" class="page-link" onclick="loadAndRenderTodos(1)">처음</a>`;
+        }
+        for (var i = startPage; i <= endPage; i++) {
+            const activeClass = i === current_Page ? 'active' : '';
+            pageLinks += `<a href="#" class="page-link ${activeClass}" onclick="loadAndRenderTodos(${i})">${i}</a>`;
+        }
+        if (endPage < totalPages) {
+            pageLinks += `<a href="#" class="page-link" onclick="loadAndRenderTodos(${totalPages})">마지막</a>`;
+        }
+        return pageLinks;
+    }
+
+    // Todo 아이템을 렌더링하는 함수를 분리
+    function renderTodoItem(todo) {
+        const completionButton = !todo.complete ? `<button class="todoUpdate" onclick="toComplete(${todo.id}, event)">완료</button>` : '';
+        return `
+            <div class="todo-item" onclick="detailView(${todo.id})">
+                <div>
+                    <p><strong>Task:</strong> ${todo.must}</p>
+                    <p><strong>완료:</strong>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" ${todo.complete ? 'checked' : ''} disabled>
+                            <span class="checkmark"></span>
+                        </label>
+                    </p>
+                    <p> ${datetimeToString(todo.datetime)}</p>
+                <div class="completion">
+                    ${completionButton}
+                </div>
+            </div>
+        `;
+    }
+
+    function detailView(id) {
+        window.location.href = `/task/todo/${id}/`;
+    }
+
+    function toComplete(id, event) {
+        event.stopPropagation();
+        
+        // 현재 완료한 todo 아이템의 위치를 찾습니다
+        const completedItem = $(event.target).closest('.todo-item');
+        const itemOffset = completedItem.offset().top - $(window).scrollTop();
+        
+        axiosInstance.patch(`/api/task/todo/update/${id}/`, {   // viewsets 으로 변경해야 하나?
+            complete: true,
         })
-    })
+        .then(function(response) {
+            // 현재 페이지 번호를 유지하면서 데이터를 새로 불러옵니다
+            loadAndRenderTodos(current_Page).then(() => {
+                const newItem = $(`.todo-item:contains(${completedItem.find('p:first').text()})`);
+                if (newItem.length) {
+                    const newScrollTop = newItem.offset().top - itemOffset;
+                    $(window).scrollTop(newScrollTop);
+                }
+            });
+        })
+        .catch(function(error) {
+            console.log(error);
+        });
+    }
+
 </script>
 
 {% endblock %}

@@ -1,3 +1,13 @@
 <div class="header">
     <h1>Pharmacy Manage</h1>
+    <div class="user-actions">
+    {% if user.is_authenticated %}
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="logout" type="submit">로그아웃</button>
+        </form>
+    {% else %}
+        <a class="login" href="/api-auth/login/">로그인</a>
+    {% endif %}
+    </div>
 </div>

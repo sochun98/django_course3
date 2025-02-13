@@ -14,3 +14,15 @@ class TodoListView(View):
     
     def get(self, request):
         return render(request, "task/todo/list.html")
+
+
+class TodoDetailView(View):
+    
+    def get(self, request, pk):
+        return render(request, "task/todo/detail.html")
+
+
+class TodoUpdateView(View):
+    
+    def get(self, request, pk):
+        return render(request, "task/todo/update.html")

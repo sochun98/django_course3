@@ -26,8 +26,20 @@ h1 {
     margin: 10px 0;
     padding: 10px;
     border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
 }
 .todo-item p {
+    margin: 5px 0;
+}
+.todo-item-detail {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+.todo-item-detail p {
     margin: 5px 0;
 }
 .todoDetail {
@@ -41,6 +53,7 @@ h1 {
 .btnList {
     text-align: center;
 }
+.login,
 .todoCreate,
 .todoUpdate,
 .todoList,
@@ -53,6 +66,18 @@ h1 {
     cursor: pointer;
     margin: 5px;
     transition: background-color 0.3s;
+    text-decoration: none;
+}
+.logout {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    transition: background-color 0.3s;
+    font-size: 16px;
 }
 .todoUpdate:hover,
 .todoDelete:hover {
@@ -111,11 +136,15 @@ h1 {
     background-color: #007bff;
     color: #fff;
     padding: 20px;
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
 }
 .header h1 {
     margin: 0;
     font-size: 24px;
+}
+.header .user-actions {
+    display: flex;
 }
 .footer {
     background-color: #333;

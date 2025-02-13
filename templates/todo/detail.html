@@ -18,7 +18,7 @@
         .then(function(response) {
             todo = response.data;
             var todoElement = `
-                    <div class="todo-item">
+                    <div class="todo-item-detail">
                         <p><strong>Name:</strong> ${todo.name}</p>
                         <p><strong>Description:</strong> ${todo.description}</p>
                         <p><strong>Complete:</strong> ${todo.complete ? "완료" : "진행중"}</p>

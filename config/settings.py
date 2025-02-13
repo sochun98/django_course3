@@ -153,7 +153,16 @@ FILE_UPLOAD_HANDLERS = [
 # FILE_ROOT = os.path.join(BASE_DIR, 'file')
 
 REST_FRAMEWORK = {
-    # "DEFAULT_PAGINATION_CLASS":"rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_AUTHENTICATION_CLASSES":[
+        "rest_framework.authentication.SessionAuthentication",
+    ],
     "DEFAULT_PAGINATION_CLASS":"api.pagination.CustomPageNumberPagination",
     "PAGE_SIZE":10,
 }
+
+LOGIN_URL = "/api-auth/login/"
+LOGIN_REDIRECT_URL = "/todo/list/"
+LOGOUT_REDIRECT_URL = "/todo/list/"
+# LOGOUT_REDIRECT_URL = "/api-auth/login/"
+LOGOUT_URL = 'logout'
+# AUTH_LOGOUT_TEMPLATE = 'todo/list2.html'
