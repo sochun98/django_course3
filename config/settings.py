@@ -10,21 +10,30 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-import os
+import os, environ
 from pathlib import Path
+
+env = environ.Env(
+    DEBUG=(bool, False)
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5awz#q5bdqh8i0v&lc%x&3vv+hchx9(a2-g5k6+gl@7_96u##q'
+# SECRET_KEY = 'django-insecure-5awz#q5bdqh8i0v&lc%x&3vv+hchx9(a2-g5k6+gl@7_96u##q'
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -37,6 +46,10 @@ CUSTOM_APPS = [
     'ingredient',
     'task',
     'todo',
+    'brand',
+    'product',
+    'category',
+    'blog',
 ]
 
 THIRD_PARTY_APPS = [
@@ -166,3 +179,5 @@ LOGOUT_REDIRECT_URL = "/todo/list/"
 # LOGOUT_REDIRECT_URL = "/api-auth/login/"
 LOGOUT_URL = 'logout'
 # AUTH_LOGOUT_TEMPLATE = 'todo/list2.html'
+
+# AUTH_USER_MODEL = "users.User"

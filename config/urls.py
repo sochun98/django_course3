@@ -6,8 +6,12 @@ from django.conf.urls.static import static
 from config.views import RandomNumberTemplateView, RandomNumberView
 
 
+# 127.0.0.1:8000/
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/blog/', include("blog.api_urls")),
+    path("api/product/", include("product.api_urls")),
+    path("api/brand/", include("brand.api_urls")),
     path("api/todo/", include("todo.api_urls")),
     path("todo/", include("todo.urls")),
     path("api/task/", include("task.api_urls")),
