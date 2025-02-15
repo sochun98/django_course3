@@ -6,4 +6,6 @@ from blog.models import Blog
 class BlogAdmin(admin.ModelAdmin):
     list_display = [
         "__str__",
+        "user",
+        "view",
     ]
