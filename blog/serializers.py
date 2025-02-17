@@ -8,7 +8,7 @@ class BlogSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True, required=False)
     class Meta:
         model = Blog
-        fields = "__all__"
+        exclude = ("view", "hidden",)
 
 
 class BlogReadSerializer(serializers.ModelSerializer):

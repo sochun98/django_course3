@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=100, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True, unique=True)
     price = models.PositiveIntegerField(default=0)
     brand = models.ForeignKey("brand.Brand", on_delete=models.PROTECT, null=True, blank=True)
     image = models.CharField(max_length=150, null=True, blank=True)
@@ -12,7 +12,7 @@ class Product(models.Model):
     
     def __str__(self):
         return self.name
-    
+    """
     class Meta:
         unique_together = ["name", "brand"]
-    
+    """
