@@ -41,15 +41,12 @@ ALLOWED_HOSTS = []
 # Application definition
 
 CUSTOM_APPS = [
-    'etc',
-    'otc',
-    'ingredient',
-    'task',
     'todo',
     'brand',
     'product',
     'category',
     'blog',
+    'users',
 ]
 
 THIRD_PARTY_APPS = [
@@ -180,4 +177,4 @@ LOGOUT_REDIRECT_URL = "/todo/list/"
 LOGOUT_URL = 'logout'
 # AUTH_LOGOUT_TEMPLATE = 'todo/list2.html'
 
-# AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "users.User"
