@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from users.models import User
 
+
+
 class SignupSerializer(serializers.Serializer):
     username = serializers.CharField()
     name = serializers.CharField(required=False)
@@ -20,4 +22,10 @@ class SignupSerializer(serializers.Serializer):
         if password != password2:
             raise serializers.ValidationError("비밀번호가 일치하지 않습니다.")
         return data
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
         
