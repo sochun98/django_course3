@@ -53,6 +53,7 @@ h1 {
 .btnList {
     text-align: center;
 }
+.signup,
 .login,
 .todoCreate,
 .todoUpdate,
@@ -172,5 +173,9 @@ h1 {
 }
 .pagination {
     margin: 20px 0;
+    text-align: center;
+}
+.signup-container,
+.login-container {
     text-align: center;
 }

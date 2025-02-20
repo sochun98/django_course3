@@ -5,6 +5,7 @@ from todo.models import Todo
 from todo.serializers import TodoSerializer
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
+from api.authentication import IsAuthenticatedCustom
 
 
 class TodoCreateAPI(APIView):
@@ -97,7 +98,7 @@ class TodoViewSet(viewsets.ModelViewSet):
     queryset = Todo.objects.all().order_by("-created_at")
     serializer_class = TodoSerializer
     # authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedCustom]
     
     # 본인의 todo만 조회
     def get_queryset(self):

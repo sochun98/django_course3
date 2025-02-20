@@ -1,3 +1,4 @@
+from django.http import HttpResponseRedirect
 from rest_framework.views import APIView
 from users.serializers import SignupSerializer, LoginSerializer
 from users.models import User, Jwt
@@ -5,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate, login, logout
 from users.utils import get_access_token, get_refresh_token
+from django.shortcuts import render, redirect
+from django.urls import reverse
 
 
 class SignupAPI(APIView):
@@ -23,7 +26,13 @@ class SignupAPI(APIView):
 class LoginAPI(APIView):
     serializer_class = LoginSerializer
     
+    def get(self, request):
+        # GET 요청 시 로그인 템플릿 렌더링
+        return render(request, 'registration/login.html')
+
+    
     def post(self, request):
+        # POST 요청 시 API 인증 로직 처리
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = authenticate(
@@ -32,7 +41,7 @@ class LoginAPI(APIView):
             password=serializer.validated_data.get("password"),
         )
         if user is None:
-            return Response(status=status.HTTP_401_UNAUTHORIZED, data={"message":"입력하신 정보가 올바르지 않습니다."})
+            return render(request, "registration/login.html", {'error':'아이디 또는 비밀번호가 올바르지 않습니다.'})
         
         # jwt 토큰 삭제
         Jwt.objects.filter(user=user).delete()
@@ -47,9 +56,11 @@ class LoginAPI(APIView):
             refresh=refresh
         )
         
-        # 세션 로그인
+        # Django 세션 로그인
         login(request, user)
         
+        # API 응답 생성
+        """
         response = Response(status=status.HTTP_200_OK)
         data = {
             "access": access,
@@ -57,8 +68,16 @@ class LoginAPI(APIView):
         response.data = data
         response.set_cookie(key="access", value=access)
         response.set_cookie(key="refresh", value=refresh, httponly=True)
+        """
+         # 리다이렉션 응답 생성
+        redirect_response = HttpResponseRedirect(reverse('todo_list'))
+
+        # 쿠키 설정
+        redirect_response.set_cookie(key="access", value=access)
+        redirect_response.set_cookie(key="refresh", value=refresh, httponly=True)
+
+        return redirect_response
         
-        return response
 
 
 class LogoutAPI(APIView):
@@ -75,7 +94,7 @@ class LogoutAPI(APIView):
         logout(request)
         
         # 쿠키 삭제
-        response = Response(status=status.HTTP_200_OK)
+        response = redirect("/login/")
         response.delete_cookie("access")
         response.delete_cookie("refresh")
         

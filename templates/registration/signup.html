@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="signup-container">
+    <h2>회원가입</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="signup" type="submit">회원가입</button>
+    </form>
+</div>
+{% if form.errors %}
+    <p style="color: red;">오류가 발생했습니다. 입력을 확인해주세요.</p>
+{% endif %}
+
+{% endblock %}

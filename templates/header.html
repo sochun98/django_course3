@@ -2,12 +2,30 @@
     <h1>Pharmacy Manage</h1>
     <div class="user-actions">
     {% if user.is_authenticated %}
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button class="logout" type="submit">로그아웃</button>
-        </form>
+        <button class="logout" onclick="logout()">{{ user.username }} 로그아웃</button>
     {% else %}
-        <a class="login" href="/api-auth/login/">로그인</a>
+        <a class="login" href="/login/">로그인</a>
+        <a class="signup" href="/users/signup/">가입하기</a>
     {% endif %}
     </div>
 </div>
+
+<script>
+    function logout() {
+        const accessToken = localStorage.getItem('access_token');  // JWT 토큰을 localStorage에서 가져옴
+        if (accessToken) {
+            fetch('/api/auth/logout/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = '/todo/list/';  // 로그아웃 성공 시 홈페이지로 이동
+                }
+            });
+        } else {
+            window.location.href = '/api/auth/logout/';  // 토큰이 없으면 기본 GET 요청
+        }
+    }
+</script>

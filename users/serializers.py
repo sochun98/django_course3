@@ -2,7 +2,6 @@ from rest_framework import serializers
 from users.models import User
 
 
-
 class SignupSerializer(serializers.Serializer):
     username = serializers.CharField()
     name = serializers.CharField(required=False)

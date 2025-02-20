@@ -4,6 +4,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from config.views import RandomNumberTemplateView, RandomNumberView
+from users.apis import LoginAPI
 
 
 # 127.0.0.1:8000/
@@ -17,10 +18,10 @@ urlpatterns = [
     path("todo/", include("todo.urls")),
     path("random/template/", RandomNumberTemplateView.as_view()),
     path("random/view/", RandomNumberView.as_view()),
-    # 127.0.0.1:8000/api-auth/login/
-    # 127.0.0.1:8000/api-auth/logout/ -> session flush cookie
     path('api-auth/', include('rest_framework.urls')),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path("login/", LoginAPI.as_view()),
+    path("users/", include("users.urls")),
 ]
 
 # if settings.DEBUG:
